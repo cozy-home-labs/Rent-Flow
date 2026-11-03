@@ -33,14 +33,29 @@
         .paid-label input { width: auto; margin: 0; }
         .summary-total { display: inline-block; min-width: 145px; font-size: 22px; font-weight: bold; color: #117864; }
         .summary-totals > div { display: grid; grid-template-columns: 190px 1fr; align-items: baseline; gap: 8px; }
+        .history-revenue-total { margin: 8px 0 12px; text-align: left; background: #117864; }
+        .history-revenue-total:hover { background: #0e6655; }
+        .history-range-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .history-range-controls label { margin-top: 0; }
+        .history-range-controls input:disabled { background: #eeeeee; color: #777; border-color: #c9c9c9; }
+        .history-revenue-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+        .history-revenue-actions button { width: auto; }
+        .history-revenue-result { margin-top: 12px; font-weight: bold; }
+        .history-revenue-list { display: grid; gap: 6px; margin-top: 10px; }
+        .history-revenue-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #e5e9e8; }
+        .history-revenue-row:last-child { border-bottom: 0; }
         .clear-tenant-button { width: auto; padding: 9px 12px; background: #fff; color: #a93226; border: 1px solid #d6a09a; }
         .clear-tenant-button:hover { background: #fdf2f2; }
         .reminder-unpaid { color: #b03a2e; }
         .reminder-promised { color: #1f5aa6; }
-        .unpaid-reminder-header, .unpaid-room-link { display: grid; grid-template-columns: minmax(145px, 1.5fr) repeat(4, minmax(82px, 1fr)); gap: 8px; align-items: center; }
+        .unpaid-reminder-header, .unpaid-room-link, .settled-reminder-header, .settled-room-link { display: grid; grid-template-columns: minmax(145px, 1.5fr) repeat(3, minmax(82px, 1fr)); gap: 8px; align-items: center; }
         .unpaid-reminder-header { padding: 6px 8px; color: #333; font-weight: bold; }
+        .settled-reminder-header { padding: 6px 8px; color: #333; font-weight: bold; }
         .unpaid-room-link { width: 100%; padding: 10px 8px; border: 0; border-bottom: 1px solid #d6e7df; border-radius: 4px; background: transparent; color: #333; text-align: left; font-size: 15px; font-weight: normal; cursor: pointer; }
+        .settled-room-link { width: 100%; padding: 10px 8px; border: 0; border-bottom: 1px solid #d6e7df; border-radius: 4px; background: transparent; color: #333; text-align: left; font-size: 15px; font-weight: normal; cursor: pointer; }
         .unpaid-room-link:hover { background: #f0f8f4; }
+        .settled-room-link:hover { background: #f0f8f4; }
+        .settled-room-link, .settled-room-link .unpaid-prediction, .settled-room-link .unpaid-prediction-delay { color: #333; }
         .unpaid-room-name { font-weight: bold; }
         .unpaid-amount { color: #333; }
         .unpaid-amount.has-balance, .unpaid-deadline.overdue { color: #b03a2e; }
@@ -50,7 +65,7 @@
         .unpaid-delayed-label { font-size: 13px; }
         .ledger-prediction { display: inline; margin-left: 0; color: #68736d; font-size: 14px; font-weight: normal; text-align: left; }
         @media (max-width: 600px) {
-            .unpaid-reminder-header, .unpaid-room-link { grid-template-columns: minmax(95px, 1.2fr) repeat(4, minmax(60px, 1fr)); gap: 4px; font-size: 12px; }
+            .unpaid-reminder-header, .unpaid-room-link, .settled-reminder-header, .settled-room-link { grid-template-columns: minmax(95px, 1.2fr) repeat(3, minmax(60px, 1fr)); gap: 4px; font-size: 12px; }
         }
         .extension-note { color: #1f5aa6; font-weight: bold; }
         .ledger-period { display: block; }
@@ -87,6 +102,7 @@
         .meter-input-row { display: flex; align-items: center; gap: 8px; }
         .meter-input-row input { flex: 1; min-width: 0; margin-bottom: 10px; }
         .meter-input-row input.meter-locked { background: #eeeeee; color: #777; border-color: #c9c9c9; }
+        .building-rate-input:disabled { background: #eeeeee; color: #777; border-color: #c9c9c9; }
         .meter-change-button { width: auto; flex: 0 0 auto; padding: 9px 12px; margin-bottom: 10px; background: #f2f6f4; color: #53665d; border: 1px solid #bdcbc3; font-size: 13px; }
         .meter-change-button:hover { background: #e7efea; }
         .quiet-action-button { width: auto; margin: 8px 8px 0 0; padding: 10px 14px; background: #fff; color: #356b58; border: 1px solid #91b7a5; }
@@ -138,16 +154,18 @@
             <input type="month" id="stockMonthPicker" onchange="changeStockMonth()">
         </div>
         <nav class="main-nav" aria-label="主导航">
-            <a class="nav-button" href="#overview" data-page="overview">收款总览</a>
+            <a class="nav-button" href="#history" data-page="history">收款总览</a>
+            <a class="nav-button" href="#overview" data-page="overview">每月收款</a>
             <a class="nav-button" href="#ledger" data-page="ledger">每月记账</a>
             <a class="nav-button" href="#customers" data-page="customers">租客信息</a>
+            <a class="nav-button" href="#data" data-page="data">数据保存</a>
         </nav>
     </header>
 
     <main>
         <section class="page active" id="page-overview">
             <div class="section">
-                <h2>📣 本月收款提醒与收入汇总</h2>
+                <h2>📣 每月收款</h2>
                 <p id="summaryPeriod"></p>
                 <div class="room-status summary-totals">
                     <div><span>已录账单应收总额：</span><span id="expectedIncome" class="summary-total">¥0.00</span></div>
@@ -156,6 +174,34 @@
                 </div>
                 <h3>未结清账单提醒</h3>
                 <div id="unpaidRentList" class="room-status" aria-live="polite"></div>
+                <h3>已结清账单</h3>
+                <div id="settledRentList" class="room-status" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section class="page" id="page-history">
+            <div class="section">
+                <h2>📚 收款总览</h2>
+                <button type="button" id="allTimeRevenueButton" class="history-revenue-total" onclick="showAllTimeRevenue()">全部历史累计已收：¥0.00</button>
+                <p id="historyRevenuePeriod" class="meter-note"></p>
+                <div class="history-range-controls">
+                    <div>
+                        <label for="historyRevenueStart">开始月份</label>
+                        <input type="month" id="historyRevenueStart" disabled onchange="calculateRevenueRange()">
+                    </div>
+                    <div>
+                        <label for="historyRevenueEnd">结束月份</label>
+                        <input type="month" id="historyRevenueEnd" disabled onchange="calculateRevenueRange()">
+                    </div>
+                </div>
+                <div class="history-revenue-actions">
+                    <button type="button" class="quiet-action-button" onclick="enableRevenueRange()">选择月份范围</button>
+                    <button type="button" class="quiet-action-button" onclick="showAllTimeRevenue()">查看全部月份</button>
+                </div>
+                <div class="room-status">
+                    <div>所选区间已收总额：<strong id="historyRevenueSelectedTotal">¥0.00</strong></div>
+                    <div id="historyRevenueList" class="history-revenue-list" aria-live="polite"></div>
+                </div>
             </div>
         </section>
 
@@ -174,15 +220,7 @@
                 </div>
                 <label for="ledgerRoom">选择记账房间：</label>
                 <select id="ledgerRoom" onchange="syncLedgerRoom()">
-                    <option value="101">101 室</option>
-                    <option value="102">102 室</option>
-                    <option value="201">201 室</option>
-                    <option value="202">202 室</option>
-                    <option value="203">203 室</option>
-                    <option value="204">204 室</option>
-                    <option value="302">302 室</option>
-                    <option value="303">303 室</option>
-                    <option value="304">304 室</option>
+                    <option value="">暂无已保存租客资料的房间</option>
                 </select>
                 <div class="room-status" id="ledgerRent">正在读取房间的固定房租...</div>
                 <p id="rentChangeWarning" class="meter-note rent-change-warning" hidden></p>
@@ -261,9 +299,8 @@
         <section class="page" id="page-customers">
             <div class="section">
                 <h2>🛠️ 租客信息编辑</h2>
-                <label for="setupRoom">输入或选择房间号：</label>
-                <input type="text" id="setupRoom" list="roomSuggestions" inputmode="numeric" pattern="[0-9]+" placeholder="例如：401" onchange="loadRoomConfigForm()">
-                <datalist id="roomSuggestions"></datalist>
+                <label for="setupRoom">输入房间号：</label>
+                <input type="text" id="setupRoom" placeholder="例如：401、东侧套房" onchange="loadRoomConfigForm()">
 
                 <label for="tenantName">当前租客姓名：</label>
                 <input type="text" id="tenantName" placeholder="例如：张三（退租时直接改名）">
@@ -277,27 +314,54 @@
                 <div class="customer-config-actions">
                     <button type="button" class="clear-tenant-button" onclick="clearCurrentTenant()">清除当前租客资料</button>
                     <button class="save-room-button" onclick="saveRoomConfig()">保存租客信息</button>
-                    <button type="button" class="quiet-action-button backup-export-button" onclick="exportData()">导出 Excel 数据备份</button>
+                </div>
+            </div>
+            <div class="section">
+                <h2>🏠 房屋信息编辑</h2>
+                <p class="meter-note">以下水电单价适用于整栋房屋的所有房间。修改单价不会自动改动已经计算好的历史账单；需要更新某个月时，请在该月记账页面重新计算总账。</p>
+                <label for="buildingWaterUnitPrice">水费单价（元/度）</label>
+                <div class="meter-input-row">
+                    <input class="building-rate-input" type="number" id="buildingWaterUnitPrice" min="0" step="0.01" value="10" aria-label="整栋房屋水费单价（元/度）">
+                    <button type="button" class="meter-change-button" id="change-buildingWaterUnitPrice" hidden onclick="unlockBuildingRate('buildingWaterUnitPrice')"></button>
+                </div>
+                <label for="buildingElectricUnitPrice">电费单价（元/度）</label>
+                <div class="meter-input-row">
+                    <input class="building-rate-input" type="number" id="buildingElectricUnitPrice" min="0" step="0.01" value="1.3" aria-label="整栋房屋电费单价（元/度）">
+                    <button type="button" class="meter-change-button" id="change-buildingElectricUnitPrice" hidden onclick="unlockBuildingRate('buildingElectricUnitPrice')"></button>
+                </div>
+                <button type="button" class="save-room-button" onclick="saveBuildingRates()">保存房屋信息</button>
+            </div>
+        </section>
+        <section class="page" id="page-data">
+            <div class="section">
+                <h2>💾 数据保存</h2>
+                <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
+                <div class="section">
+                    <h3>Google 网盘备份</h3>
                     <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">🌸 一键同步到 Google 网盘（防手机丢失）</button>
                     <button type="button" class="quiet-action-button" onclick="loadFromGoogleDrive()">🔄 从网盘恢复历史数据</button>
                     <p id="driveSyncStatus" class="memo-status" role="status" aria-live="polite"></p>
-                    <p class="meter-note">新增或修改内容会自动保存在当前浏览器。需要跨设备备份时，请点上方 Google 网盘同步；关闭网页前仍会提醒导出 Excel 备份。</p>
+                    <p class="meter-note"><strong>Google 网盘相关告知：</strong><br>新增或修改内容会自动保存在当前浏览器。需要跨设备备份时，请点上方 Google 网盘同步；关闭网页前仍会提醒导出 Excel 备份。</p>
                 </div>
-                <label for="backupFile">选择 Excel 或 JSON 备份文件导入</label>
-                <input
-                    type="file"
-                    id="backupFile"
-                    accept=".xlsx,.xls,.xml,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/xml,text/xml,application/json"
-                    onchange="importData(event)"
-                >
-                <p class="meter-note">数据保存在当前浏览器中，不会自动同步。换设备、换浏览器或清理浏览器数据前，请先导出并妥善保存备份。Excel 可用于查看；修改可见表格不会更新恢复数据。导回网站请使用下载的原始备份，修改或另存后的文件可能无法正确导入。</p>
+                <div class="section">
+                    <h3>Excel 数据备份</h3>
+                    <button type="button" class="quiet-action-button backup-export-button" onclick="exportData()">导出 Excel 数据备份</button>
+                    <label for="backupFile">选择 Excel 或 JSON 备份文件导入</label>
+                    <input
+                        type="file"
+                        id="backupFile"
+                        accept=".xlsx,.xls,.xml,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/xml,text/xml,application/json"
+                        onchange="importData(event)"
+                    >
+                    <p class="meter-note"><strong>Excel 备份相关告知：</strong><br>数据保存在当前浏览器中，不会自动同步。换设备、换浏览器或清理浏览器数据前，请先导出并妥善保存备份。Excel 可用于查看；修改可见表格不会更新恢复数据。导回网站请使用下载的原始备份，修改或另存后的文件可能无法正确导入。</p>
+                </div>
+                <footer class="security-note">
+                    <p><strong>💡 安全提示：</strong>Google Drive 备份会在本机加密后上传；解密密码不会写入备份文件。请妥善保管密码，忘记后无法恢复。</p>
+                    <p>若设备、Google 账号或网站代码被他人控制，仍可能有风险。停止使用时，可在 <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Google 账号已连接的应用</a>中撤销「青妈包租婆管理系统」的访问权限。撤销权限不会自动删除已有备份；如需删除，请在 Google Drive 手动删除备份文件。</p>
+                </footer>
             </div>
         </section>
     </main>
-    <footer class="security-note">
-        <p><strong>💡 安全提示：</strong>Google Drive 备份会在本机加密后上传；解密密码不会写入备份文件。请妥善保管密码，忘记后无法恢复。</p>
-        <p>若设备、Google 账号或网站代码被他人控制，仍可能有风险。停止使用时，可在 <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Google 账号已连接的应用</a>中撤销「青妈包租婆管理系统」的访问权限。撤销权限不会自动删除已有备份；如需删除，请在 Google Drive 手动删除备份文件。</p>
-    </footer>
     <dialog id="paymentCompositionDialog" oncancel="event.preventDefault()">
         <form method="dialog">
             <h2>确认收款内容</h2>
@@ -341,9 +405,9 @@
     // 本地保存 / 读取
     const LSK = {
         room: r => `room_${r}`,
-        ledger: (room, m) => `ledger_${m}_${room}`
+        ledger: (room, m) => `ledger_${m}_${room}`,
+        building: 'building_config'
     };
-    const DEFAULT_ROOM_NUMBERS = ['101', '102', '201', '202', '203', '204', '302', '303', '304'];
     const BACKUP_PENDING_KEY = '__rental_excel_backup_pending';
     const BACKUP_EXPORTED_KEY = '__rental_excel_backup_exported';
     const nativeStorageSetItem = Storage.prototype.setItem;
@@ -363,6 +427,8 @@
     let pendingBackupImport = null;
     let pendingPaymentSave = null;
     let editingPaymentRecordId = null;
+    let buildingRateEdits = new Set();
+    let historyRevenueCustomRange = false;
 
     function selectInputText(event) {
         const field = event.target.closest('input:not([type]), input[type="text"], input[type="number"], input[type="search"], input[type="tel"], input[type="url"], input[type="email"], input[type="password"], textarea');
@@ -413,6 +479,78 @@
         }
     }
 
+    function getBuildingRates() {
+        const saved = loadStock(LSK.building) || {};
+        return {
+            waterUnitPrice: Number.isFinite(Number(saved.waterUnitPrice)) && saved.waterUnitPrice !== '' ? Number(saved.waterUnitPrice) : 10,
+            electricUnitPrice: Number.isFinite(Number(saved.electricUnitPrice)) && saved.electricUnitPrice !== '' ? Number(saved.electricUnitPrice) : 1.3,
+            waterUnitPriceDate: saved.waterUnitPriceDate || '',
+            electricUnitPriceDate: saved.electricUnitPriceDate || ''
+        };
+    }
+
+    function loadBuildingRatesForm() {
+        const saved = loadStock(LSK.building);
+        const rates = getBuildingRates();
+        const fields = [
+            { id: 'buildingWaterUnitPrice', value: rates.waterUnitPrice, date: rates.waterUnitPriceDate },
+            { id: 'buildingElectricUnitPrice', value: rates.electricUnitPrice, date: rates.electricUnitPriceDate }
+        ];
+        fields.forEach(({ id, value, date }) => {
+            const input = document.getElementById(id);
+            const button = document.getElementById(`change-${id}`);
+            input.value = value;
+            input.disabled = Boolean(saved && date && !buildingRateEdits.has(id));
+            input.classList.toggle('meter-locked', input.disabled);
+            button.hidden = !(saved && date);
+            button.textContent = buildingRateEdits.has(id) ? '编辑中' : (date ? `${date} 更改` : '');
+        });
+    }
+
+    function unlockBuildingRate(fieldId) {
+        const input = document.getElementById(fieldId);
+        const labels = {
+            buildingWaterUnitPrice: '水费单价',
+            buildingElectricUnitPrice: '电费单价'
+        };
+        if (!input || !labels[fieldId]) return;
+        if (!confirm(`上次输入的${labels[fieldId]}已保存。确定要更改吗？`)) return;
+        buildingRateEdits.add(fieldId);
+        loadBuildingRatesForm();
+        input.focus();
+    }
+
+    function saveBuildingRates() {
+        const waterInput = document.getElementById('buildingWaterUnitPrice').value;
+        const electricInput = document.getElementById('buildingElectricUnitPrice').value;
+        const waterUnitPrice = Number(waterInput);
+        const electricUnitPrice = Number(electricInput);
+        if (waterInput === '' || !Number.isFinite(waterUnitPrice) || waterUnitPrice < 0) {
+            alert('请输入不小于 0 的有效水费单价。');
+            return;
+        }
+        if (electricInput === '' || !Number.isFinite(electricUnitPrice) || electricUnitPrice < 0) {
+            alert('请输入不小于 0 的有效电费单价。');
+            return;
+        }
+        const previous = getBuildingRates();
+        const saved = loadStock(LSK.building) || {};
+        const today = getTodayISODate();
+        const waterChanged = !saved.waterUnitPriceDate || buildingRateEdits.has('buildingWaterUnitPrice') || Math.round(previous.waterUnitPrice * 100) !== Math.round(waterUnitPrice * 100);
+        const electricChanged = !saved.electricUnitPriceDate || buildingRateEdits.has('buildingElectricUnitPrice') || Math.round(previous.electricUnitPrice * 100) !== Math.round(electricUnitPrice * 100);
+        const buildingRates = {
+            waterUnitPrice,
+            electricUnitPrice,
+            waterUnitPriceDate: waterChanged ? today : (saved.waterUnitPriceDate || today),
+            electricUnitPriceDate: electricChanged ? today : (saved.electricUnitPriceDate || today)
+        };
+        localStorage.setItem(LSK.building, JSON.stringify(buildingRates));
+        buildingRateEdits.clear();
+        loadBuildingRatesForm();
+        syncLedgerRoom();
+        alert('整栋房屋的水电单价已保存。');
+    }
+
     // 保存配置到手机/电脑本地的函数
     function saveRoomConfig() {
         const room = document.getElementById('setupRoom').value.trim();
@@ -423,8 +561,8 @@
         const rentNumber = Number(rent);
         const dayNumber = Number(day);
 
-        if (!/^\d+$/.test(room)) {
-            alert('请输入只包含数字的房间号。');
+        if (!room) {
+            alert('请输入房间号。');
             return;
         }
 
@@ -511,44 +649,38 @@
         alert(`${room}室当前租客资料已清除，历史账单和收款记录已保留。`);
     }
     function getKnownRoomNumbers() {
-        const rooms = new Set(DEFAULT_ROOM_NUMBERS);
+        const rooms = new Set();
         for (let index = 0; index < localStorage.length; index++) {
             const key = localStorage.key(index) || '';
-            const roomMatch = key.match(/^room_(\d+)$/);
-            const ledgerMatch = key.match(/^ledger_\d{4}-\d{2}_(\d+)$/);
-            const room = roomMatch ? roomMatch[1] : ledgerMatch ? ledgerMatch[1] : null;
-            if (room) rooms.add(room);
+            const roomMatch = key.match(/^room_(.+)$/);
+            if (!roomMatch) continue;
+            const roomData = loadStock(key);
+            if (roomData && typeof roomData === 'object') rooms.add(roomMatch[1]);
         }
-        return Array.from(rooms).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b));
+        return Array.from(rooms).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b, 'zh-CN', { numeric: true }));
     }
 
     function refreshRoomOptions(preferredRoom = '') {
         const rooms = getKnownRoomNumbers();
         const preferred = String(preferredRoom || '');
-        if (preferred && /^\d+$/.test(preferred) && !rooms.includes(preferred)) {
-            rooms.push(preferred);
-            rooms.sort((a, b) => Number(a) - Number(b) || a.localeCompare(b));
-        }
-
-        const suggestions = document.getElementById('roomSuggestions');
-        suggestions.replaceChildren(...rooms.map(room => {
-            const option = document.createElement('option');
-            option.value = room;
-            return option;
-        }));
-
-        const roomInput = document.getElementById('setupRoom');
-        if (!roomInput.value && rooms.length) roomInput.value = rooms[0];
-
         const ledgerSelect = document.getElementById('ledgerRoom');
-        const selectedRoom = preferred || ledgerSelect.value || rooms[0] || '';
-        ledgerSelect.replaceChildren(...rooms.map(room => {
+        const previousSelection = ledgerSelect.value;
+        const options = rooms.map(room => {
             const option = document.createElement('option');
             option.value = room;
             option.textContent = `${room} 室`;
             return option;
-        }));
-        if (rooms.includes(selectedRoom)) ledgerSelect.value = selectedRoom;
+        });
+        if (!options.length) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '暂无已保存租客资料的房间';
+            options.push(option);
+        }
+        ledgerSelect.replaceChildren(...options);
+        ledgerSelect.disabled = rooms.length === 0;
+        const selectedRoom = rooms.includes(preferred) ? preferred : rooms.includes(previousSelection) ? previousSelection : (rooms[0] || '');
+        ledgerSelect.value = selectedRoom;
     }
 
     function loadRoomConfigForm() {
@@ -557,6 +689,7 @@
         document.getElementById('tenantName').value = roomData ? roomData.name : '';
         document.getElementById('baseRent').value = roomData ? roomData.rent : '';
         document.getElementById('payDay').value = roomData ? roomData.day : '';
+        loadBuildingRatesForm();
     }
 
     function syncLedgerRoom() {
@@ -673,8 +806,9 @@
             : '（预计付款日：记录不足，暂无法估算）';
         payDayRow.append(payDayText, predictionText);
         const rentBox = document.getElementById('ledgerRent');
+        const buildingRates = getBuildingRates();
         rentBox.textContent = roomData && Number.isFinite(Number(roomData.rent))
-            ? `固定房租：${Number(roomData.rent).toFixed(2)} 元/月`
+            ? `固定房租：${Number(roomData.rent).toFixed(2)} 元/月；水费单价：${buildingRates.waterUnitPrice.toFixed(2)} 元/度；电费单价：${buildingRates.electricUnitPrice.toFixed(2)} 元/度`
             : '尚未找到该房间的固定房租，请先在模块一保存房间配置。';
 
         const ledger = loadStock(getLedgerKey(room)) || {};
@@ -688,9 +822,17 @@
         const currentRent = Number(roomData?.rent);
         const hasRentMismatch = hasTotal && Number.isFinite(billedRent) && Number.isFinite(currentRent)
             && Math.round(billedRent * 100) !== Math.round(currentRent * 100);
-        rentChangeWarning.hidden = !hasRentMismatch;
-        rentChangeWarning.textContent = hasRentMismatch
-            ? `${year}年${Number(monthNumber)}月账单仍按 ¥${billedRent.toFixed(2)} 计算，当前固定房租为 ¥${currentRent.toFixed(2)}。如需更新，请点击“一键计算总账”。`
+        const billedWaterUnitPrice = Number(ledger.waterUnitPrice ?? 10);
+        const billedElectricUnitPrice = Number(ledger.electricUnitPrice ?? 1.3);
+        const hasRateMismatch = hasTotal
+            && (Math.round(billedWaterUnitPrice * 100) !== Math.round(buildingRates.waterUnitPrice * 100)
+                || Math.round(billedElectricUnitPrice * 100) !== Math.round(buildingRates.electricUnitPrice * 100));
+        rentChangeWarning.hidden = !(hasRentMismatch || hasRateMismatch);
+        const retainedBillingRules = [];
+        if (hasRentMismatch) retainedBillingRules.push(`固定房租 ¥${billedRent.toFixed(2)}`);
+        if (hasRateMismatch) retainedBillingRules.push(`水费 ¥${billedWaterUnitPrice.toFixed(2)}/度、电费 ¥${billedElectricUnitPrice.toFixed(2)}/度`);
+        rentChangeWarning.textContent = retainedBillingRules.length
+            ? `${year}年${Number(monthNumber)}月账单仍按${retainedBillingRules.join('、')}计算；当前房屋设置为固定房租 ¥${currentRent.toFixed(2)}、水费 ¥${buildingRates.waterUnitPrice.toFixed(2)}/度、电费 ¥${buildingRates.electricUnitPrice.toFixed(2)}/度。如需按当前设置更新，请点击“一键计算总账”。`
             : '';
         const extensionOutstanding = hasTotal ? Math.max(0, total - getPaidAmount(ledger, roomData, total)) : 0;
         const monthEndDay = new Date(Number(year), Number(monthNumber), 0).getDate();
@@ -745,13 +887,15 @@
         const rentAmount = hasTotal ? Number(ledger.rentAmount ?? roomData?.rent ?? 0) : 0;
         const waterCharge = hasTotal ? Number(ledger.waterCharge ?? Number(ledger.water) * 10) : 0;
         const electricCharge = hasTotal ? Number(ledger.electricCharge ?? Number(ledger.electricity) * 1.3) : 0;
+        const ledgerWaterUnitPrice = Number(ledger.waterUnitPrice ?? 10);
+        const ledgerElectricUnitPrice = Number(ledger.electricUnitPrice ?? 1.3);
         document.querySelector('[data-paid-key="rent"]').dataset.paidAmount = String(rentAmount);
         document.querySelector('[data-paid-key="water"]').dataset.paidAmount = String(waterCharge);
         document.querySelector('[data-paid-key="electricity"]').dataset.paidAmount = String(electricCharge);
         document.getElementById('breakdownRent').textContent = `¥${rentAmount.toFixed(2)}`;
-        document.getElementById('breakdownWaterLabel').textContent = `水费（${Number(ledger.water || 0)} 度 × 10 元）`;
+        document.getElementById('breakdownWaterLabel').textContent = `水费（${Number(ledger.water || 0)} 度 × ${ledgerWaterUnitPrice.toFixed(2)} 元/度）`;
         document.getElementById('breakdownWater').textContent = `¥${waterCharge.toFixed(2)}`;
-        document.getElementById('breakdownElectricLabel').textContent = `电费（${Number(ledger.electricity || 0)} 度 × 1.3 元）`;
+        document.getElementById('breakdownElectricLabel').textContent = `电费（${Number(ledger.electricity || 0)} 度 × ${ledgerElectricUnitPrice.toFixed(2)} 元/度）`;
         document.getElementById('breakdownElectric').textContent = `¥${electricCharge.toFixed(2)}`;
         renderExtraChargeBreakdown(otherCharges, paidItems, hasTotal);
         const equationParts = [
@@ -809,6 +953,140 @@
         return 0;
     }
 
+    function getRecordedLedgerMonths(throughMonth = getCurrentStockMonth()) {
+        const months = new Set();
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index) || '';
+            const match = key.match(/^ledger_(\d{4}-\d{2})_(.+)$/);
+            if (match && match[1] <= throughMonth && Number(match[1].slice(5)) >= 1 && Number(match[1].slice(5)) <= 12) {
+                months.add(match[1]);
+            }
+        }
+        return Array.from(months).sort();
+    }
+
+    function getMonthlyReceivedTotal(month) {
+        let totalReceived = 0;
+        const prefix = `ledger_${month}_`;
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index) || '';
+            if (!key.startsWith(prefix)) continue;
+            const room = key.slice(prefix.length);
+            const ledger = loadStock(key);
+            const billTotal = Number(ledger?.total);
+            if (!ledger || !Number.isFinite(billTotal)) continue;
+            const roomData = loadStock(LSK.room(room));
+            let paid = getPaidAmount(ledger, roomData, billTotal);
+            if (!Number.isFinite(Number(ledger.paidAmount)) && !ledger.paid && ledger.rentPaid) {
+                paid = Math.max(0, Number(ledger.rentAmount ?? roomData?.rent) || 0);
+            }
+            totalReceived += paid;
+        }
+        return Math.round(totalReceived * 100) / 100;
+    }
+
+    function renderRevenueRange(startMonth, endMonth) {
+        const list = document.getElementById('historyRevenueList');
+        const result = document.getElementById('historyRevenueSelectedTotal');
+        list.replaceChildren();
+        if (!startMonth || !endMonth || startMonth > endMonth) {
+            result.textContent = '¥0.00';
+            list.textContent = '暂无账单记录。';
+            return;
+        }
+        let sum = 0;
+        for (let month = startMonth; month <= endMonth; month = getNextMonth(month)) {
+            const monthlyTotal = getMonthlyReceivedTotal(month);
+            sum += monthlyTotal;
+            const row = document.createElement('div');
+            row.className = 'history-revenue-row';
+            const monthLabel = document.createElement('span');
+            const [year, monthNumber] = month.split('-');
+            monthLabel.textContent = `${year}年${Number(monthNumber)}月`;
+            const amountLabel = document.createElement('strong');
+            amountLabel.textContent = `¥${monthlyTotal.toFixed(2)}`;
+            row.append(monthLabel, amountLabel);
+            list.append(row);
+        }
+        result.textContent = `¥${sum.toFixed(2)}`;
+    }
+
+    function updateHistoryRevenue() {
+        const months = getRecordedLedgerMonths();
+        const currentMonth = getCurrentStockMonth();
+        const firstMonth = months[0] || '';
+        const allTimeTotal = months.reduce((sum, month) => sum + getMonthlyReceivedTotal(month), 0);
+        document.getElementById('allTimeRevenueButton').textContent = `全部历史累计已收：¥${allTimeTotal.toFixed(2)}`;
+        const startInput = document.getElementById('historyRevenueStart');
+        const endInput = document.getElementById('historyRevenueEnd');
+        startInput.min = firstMonth || currentMonth;
+        endInput.min = firstMonth || currentMonth;
+        startInput.max = currentMonth;
+        endInput.max = currentMonth;
+        if (!startInput.value || startInput.value < startInput.min || startInput.value > currentMonth) startInput.value = firstMonth || currentMonth;
+        if (!endInput.value || endInput.value < startInput.value || endInput.value > currentMonth) endInput.value = currentMonth;
+        if (!firstMonth) {
+            document.getElementById('historyRevenuePeriod').textContent = '目前还没有已保存的账单记录。';
+            historyRevenueCustomRange = false;
+            startInput.disabled = true;
+            endInput.disabled = true;
+            renderRevenueRange('', '');
+            return;
+        }
+        if (historyRevenueCustomRange) {
+            startInput.disabled = false;
+            endInput.disabled = false;
+            document.getElementById('historyRevenuePeriod').textContent = `所选范围：${startInput.value} 至 ${endInput.value}`;
+            renderRevenueRange(startInput.value, endInput.value);
+        } else {
+            showAllTimeRevenue();
+        }
+    }
+
+    function showAllTimeRevenue() {
+        const months = getRecordedLedgerMonths();
+        const currentMonth = getCurrentStockMonth();
+        const firstMonth = months[0] || '';
+        const startInput = document.getElementById('historyRevenueStart');
+        const endInput = document.getElementById('historyRevenueEnd');
+        startInput.value = firstMonth || currentMonth;
+        endInput.value = currentMonth;
+        historyRevenueCustomRange = false;
+        startInput.disabled = true;
+        endInput.disabled = true;
+        document.getElementById('historyRevenuePeriod').textContent = firstMonth
+            ? `全部月份：${firstMonth} 至 ${currentMonth}`
+            : '目前还没有已保存的账单记录。';
+        renderRevenueRange(firstMonth, firstMonth ? currentMonth : '');
+    }
+
+    function enableRevenueRange() {
+        const months = getRecordedLedgerMonths();
+        if (!months.length) {
+            alert('目前还没有已保存的账单记录。');
+            return;
+        }
+        document.getElementById('historyRevenueStart').disabled = false;
+        document.getElementById('historyRevenueEnd').disabled = false;
+        historyRevenueCustomRange = true;
+        document.getElementById('historyRevenuePeriod').textContent = '请选择开始和结束月份；统计范围不能晚于当前月份。';
+    }
+
+    function calculateRevenueRange() {
+        const startMonth = document.getElementById('historyRevenueStart').value;
+        const endMonth = document.getElementById('historyRevenueEnd').value;
+        if (!startMonth || !endMonth || startMonth > endMonth) {
+            alert('请选择有效的开始月份和结束月份。');
+            return;
+        }
+        if (endMonth > getCurrentStockMonth()) {
+            alert('结束月份不能晚于当前月份。');
+            return;
+        }
+        document.getElementById('historyRevenuePeriod').textContent = `所选范围：${startMonth} 至 ${endMonth}`;
+        renderRevenueRange(startMonth, endMonth);
+    }
+
     function getVisiblePaymentRecords(ledger, currentPaid) {
         if (Array.isArray(ledger.paymentRecords)) return ledger.paymentRecords;
         return currentPaid > 0 ? [{ id: 'legacy-opening', date: '', amount: currentPaid, note: '历史累计已收（旧账单无收款明细）', type: 'opening' }] : [];
@@ -850,8 +1128,8 @@
         const amount = Math.abs(Number(record.amount));
         const candidates = [
             ['固定房租', ledger.rentAmount],
-            ['水费', ledger.waterCharge ?? Number(ledger.water || 0) * 10],
-            ['电费', ledger.electricCharge ?? Number(ledger.electricity || 0) * 1.3],
+            ['水费', ledger.waterCharge ?? Number(ledger.water || 0) * Number(ledger.waterUnitPrice ?? 10)],
+            ['电费', ledger.electricCharge ?? Number(ledger.electricity || 0) * Number(ledger.electricUnitPrice ?? 1.3)],
             ...(Array.isArray(ledger.otherCharges)
                 ? ledger.otherCharges.filter(charge => Number(charge.amount) > 0).map(charge => [charge.title || '其他款项', charge.amount])
                 : [])
@@ -1285,8 +1563,9 @@
         const previousTotal = Number(previousLedger.total);
         const previousHasTotal = Number.isFinite(previousTotal);
         const rentAmount = Number(roomData.rent);
-        const waterCharge = Math.round(water * 10 * 100) / 100;
-        const electricCharge = Math.round(electricity * 1.3 * 100) / 100;
+        const buildingRates = getBuildingRates();
+        const waterCharge = Math.round(water * buildingRates.waterUnitPrice * 100) / 100;
+        const electricCharge = Math.round(electricity * buildingRates.electricUnitPrice * 100) / 100;
         const extraChargeTotal = extraCharges.reduce((sum, charge) => sum + charge.amount, 0);
         const total = Math.round((rentAmount + waterCharge + electricCharge + extraChargeTotal) * 100) / 100;
         if (total < 0) {
@@ -1351,6 +1630,8 @@
             electricityPreviousReadingDate,
             electricityCurrentReadingDate,
             rentAmount,
+            waterUnitPrice: buildingRates.waterUnitPrice,
+            electricUnitPrice: buildingRates.electricUnitPrice,
             waterCharge,
             electricCharge,
             otherCharges: extraCharges,
@@ -1370,8 +1651,8 @@
         if (targetCents <= 0) return null;
         const components = [
             { label: '固定房租', amount: Number(ledger.rentAmount ?? roomData?.rent) },
-            { label: '水费', amount: Number(ledger.waterCharge ?? Number(ledger.water || 0) * 10) },
-            { label: '电费', amount: Number(ledger.electricCharge ?? Number(ledger.electricity || 0) * 1.3) },
+            { label: '水费', amount: Number(ledger.waterCharge ?? Number(ledger.water || 0) * Number(ledger.waterUnitPrice ?? 10)) },
+            { label: '电费', amount: Number(ledger.electricCharge ?? Number(ledger.electricity || 0) * Number(ledger.electricUnitPrice ?? 1.3)) },
             ...(Array.isArray(ledger.otherCharges)
                 ? ledger.otherCharges.map(charge => ({ label: charge.title || '其他款项', amount: Number(charge.amount) }))
                 : [])
@@ -1634,7 +1915,7 @@
         const data = {};
         for (let index = 0; index < localStorage.length; index++) {
             const key = localStorage.key(index);
-            if (key && (key === 'selected_stock_month' || /^room_\d+$/.test(key) || /^ledger_\d{4}-\d{2}_\d+$/.test(key))) {
+            if (key && (key === 'selected_stock_month' || key === LSK.building || /^room_.+$/.test(key) || /^ledger_\d{4}-\d{2}_.+$/.test(key))) {
                 data[key] = localStorage.getItem(key);
             }
         }
@@ -1642,11 +1923,11 @@
     }
 
     function buildExcelBackup(data, exportedAt) {
-        const rooms = Object.entries(data).filter(([key]) => /^room_\d+$/.test(key)).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+        const rooms = Object.entries(data).filter(([key]) => /^room_.+$/.test(key)).sort(([a], [b]) => a.slice(5).localeCompare(b.slice(5), 'zh-CN', { numeric: true }));
         const ledgers = Object.entries(data).map(([key, value]) => {
-            const match = key.match(/^ledger_(\d{4}-\d{2})_(\d+)$/);
+            const match = key.match(/^ledger_(\d{4}-\d{2})_(.+)$/);
             return match ? { month: match[1], room: match[2], ledger: JSON.parse(value) } : null;
-        }).filter(Boolean).sort((a, b) => a.month.localeCompare(b.month) || Number(a.room) - Number(b.room));
+        }).filter(Boolean).sort((a, b) => a.month.localeCompare(b.month) || a.room.localeCompare(b.room, 'zh-CN', { numeric: true }));
         const roomRows = [['房间', '租客姓名', '固定房租（元）', '每月交租日']];
         rooms.forEach(([key, value]) => {
             const room = JSON.parse(value);
@@ -1664,7 +1945,8 @@
             if (records.length) records.forEach(item => paymentRows.push([month, room, item.date || '历史记录', Number(item.amount) || 0, item.note || '']));
             else if (paid > 0) paymentRows.push([month, room, '历史记录', paid, '旧账单仅保存累计金额，未保存逐笔日期']);
         });
-        const info = [['青妈包租婆管理系统备份'], ['导出日期', exportedAt], ['说明', '可在系统中导入此 Excel 备份。请不要修改隐藏的“系统恢复数据”工作表。'], ['房间数量', rooms.length], ['账单数量', ledgers.length]];
+        const buildingRates = data.building_config ? JSON.parse(data.building_config) : { waterUnitPrice: 10, electricUnitPrice: 1.3 };
+        const info = [['青妈包租婆管理系统备份'], ['导出日期', exportedAt], ['说明', '可在系统中导入此 Excel 备份。请不要修改隐藏的“系统恢复数据”工作表。'], ['房间数量', rooms.length], ['账单数量', ledgers.length], ['整栋水费单价（元/度）', Number(buildingRates.waterUnitPrice)], ['整栋电费单价（元/度）', Number(buildingRates.electricUnitPrice)]];
         const hidden = [['键', '系统恢复数据'], ...Object.entries(data)];
         const styles = `<Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/></Borders></Style><Style ss:ID="Header"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#4F9C78" ss:Pattern="Solid"/><Alignment ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/></Borders></Style></Styles>`;
         return `<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${styles}${makeExcelSheet('说明', info)}${makeExcelSheet('租客信息', roomRows)}${makeExcelSheet('账单汇总', ledgerRows)}${makeExcelSheet('收款明细', paymentRows)}${makeExcelSheet('系统恢复数据', hidden, true)}</Workbook>`;
@@ -1813,9 +2095,9 @@
         rowsBySheet[0][2][1] = '本文件可在 Excel 中查看；修改可见表格不会更新隐藏的系统恢复数据。导回网站请使用下载的原始备份；修改或另存后的文件可能无法正确导入。截图见“月度备注”工作表。';
 
         const ledgers = Object.entries(data).map(([key, value]) => {
-            const match = key.match(/^ledger_(\d{4}-\d{2})_(\d+)$/);
+            const match = key.match(/^ledger_(\d{4}-\d{2})_(.+)$/);
             return match ? { month: match[1], room: match[2], ledger: JSON.parse(value) } : null;
-        }).filter(Boolean).sort((a, b) => a.month.localeCompare(b.month) || Number(a.room) - Number(b.room));
+        }).filter(Boolean).sort((a, b) => a.month.localeCompare(b.month) || a.room.localeCompare(b.room, 'zh-CN', { numeric: true }));
         const memoRows = [['月份', '房间', '备注', '截图（已嵌入）']];
         const imageItems = [];
         ledgers.forEach(({ month, room, ledger }) => {
@@ -1920,22 +2202,24 @@
         if (!backup || backup.format !== 'qingma-rental-manager-backup' || backup.version !== 1 || !backup.data || typeof backup.data !== 'object' || Array.isArray(backup.data)) throw new Error('备份格式不正确');
         const entries = Object.entries(backup.data);
         for (const [key, value] of entries) {
-            const roomKey = /^room_\d+$/.test(key);
-            const match = key.match(/^ledger_(\d{4})-(\d{2})_(\d+)$/);
+            const roomKey = /^room_.+$/.test(key);
+            const match = key.match(/^ledger_(\d{4})-(\d{2})_(.+)$/);
             const ledgerKey = Boolean(match && Number(match[2]) >= 1 && Number(match[2]) <= 12);
             const monthKey = key === 'selected_stock_month' && typeof value === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
-            if ((!roomKey && !ledgerKey && !monthKey) || typeof value !== 'string') throw new Error('备份含无效数据');
-            if (roomKey || ledgerKey) {
+            const buildingKey = key === 'building_config';
+            if ((!roomKey && !ledgerKey && !monthKey && !buildingKey) || typeof value !== 'string') throw new Error('备份含无效数据');
+            if (roomKey || ledgerKey || buildingKey) {
                 const record = JSON.parse(value);
                 if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('备份记录无效');
+                if (buildingKey && (!Number.isFinite(Number(record.waterUnitPrice)) || Number(record.waterUnitPrice) < 0 || !Number.isFinite(Number(record.electricUnitPrice)) || Number(record.electricUnitPrice) < 0)) throw new Error('房屋水电单价备份无效');
             }
         }
         return entries;
     }
 
     function showBackupPreview(backup, entries) {
-        const rooms = entries.map(([key]) => key).filter(key => /^room_\d+$/.test(key));
-        const months = entries.map(([key]) => key.match(/^ledger_(\d{4}-\d{2})_\d+$/)?.[1]).filter(Boolean).sort();
+        const rooms = entries.map(([key]) => key).filter(key => /^room_.+$/.test(key));
+        const months = entries.map(([key]) => key.match(/^ledger_(\d{4}-\d{2})_.+$/)?.[1]).filter(Boolean).sort();
         const overwrites = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
         const date = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('zh-CN') : '旧版备份未记录导出时间';
         const period = months.length ? `${months[0]} 至 ${months[months.length - 1]}` : '无账单';
@@ -2080,6 +2364,7 @@
     }
 
     function updateMonthlySummary() {
+        updateHistoryRevenue();
         const month = getStockMonth();
         const [year, monthNumber] = month.split('-');
         document.getElementById('summaryPeriod').textContent = `统计月份：${year}年${Number(monthNumber)}月`;
@@ -2098,6 +2383,7 @@
         let outstandingIncome = 0;
         let configuredRooms = 0;
         const unpaidLedgers = [];
+        const settledLedgers = [];
 
         rooms.forEach(room => {
             const roomData = loadStock(LSK.room(room));
@@ -2122,7 +2408,7 @@
                 const payDay = dueInfo.day;
                 const promisedDate = ledger && ledger.promisedDate ? ledger.promisedDate : '';
                 const overdue = promisedDate
-                    ? !isFutureMonth && evaluationDate > promisedDate
+                    ? !isFutureMonth && evaluationDate > dueInfo.date
                     : isPastMonth || (!isFutureMonth && evaluationDate > dueInfo.date);
                 unpaidLedgers.push({
                     room,
@@ -2134,6 +2420,14 @@
                     deadline: promisedDate || dueInfo.date,
                     predictedPayment: getPredictedPaymentInfo(room, roomData, month)
                 });
+            } else {
+                settledLedgers.push({
+                    room,
+                    name: roomData.name,
+                    paidAmount,
+                    settlementDate: getFullSettlementDate(ledger, total),
+                    predictedPayment: getPredictedPaymentInfo(room, roomData, month)
+                });
             }
         });
 
@@ -2142,49 +2436,79 @@
         document.getElementById('outstandingIncome').textContent = `¥${outstandingIncome.toFixed(2)}`;
 
         const unpaidRentList = document.getElementById('unpaidRentList');
+        const settledRentList = document.getElementById('settledRentList');
         if (configuredRooms === 0) {
             unpaidRentList.textContent = '请先在模块一登记租客姓名、固定房租和交租日。';
+            settledRentList.textContent = '暂无已结清账单。';
             return;
         }
         if (unpaidLedgers.length === 0) {
             unpaidRentList.textContent = '所有已登记房间的本月账单都已结清。';
-            return;
+        } else {
+            const header = document.createElement('div');
+            header.className = 'unpaid-reminder-header';
+            ['房间（租客）', '已收', '尚欠', '期限'].forEach(text => {
+                const cell = document.createElement('span');
+                cell.textContent = text;
+                header.append(cell);
+            });
+            const rows = unpaidLedgers.map(item => {
+                const link = document.createElement('button');
+                link.type = 'button';
+                link.className = 'unpaid-room-link';
+
+                const roomName = document.createElement('span');
+                roomName.className = 'unpaid-room-name';
+                roomName.textContent = `${item.room} 室（${item.name || '未填写租客姓名'}）`;
+
+                const received = document.createElement('span');
+                received.className = 'unpaid-amount';
+                received.textContent = item.hasTotal ? `¥${item.paidAmount.toFixed(2)}` : '—';
+
+                const owing = document.createElement('span');
+                owing.className = `unpaid-amount${item.outstanding > 0 ? ' has-balance' : ''}`;
+                owing.textContent = item.hasTotal ? `¥${item.outstanding.toFixed(2)}` : '未录账单';
+
+                const deadline = document.createElement('span');
+                deadline.className = `unpaid-deadline${item.overdue ? ' overdue' : ''}`;
+                const deadlineDate = document.createElement('span');
+                deadlineDate.textContent = item.deadline;
+                deadline.append(deadlineDate);
+                if (item.overdue) {
+                    const delayedLabel = document.createElement('span');
+                    delayedLabel.className = 'unpaid-delayed-label';
+                    delayedLabel.textContent = '（已延期）';
+                    deadline.append(delayedLabel);
+                }
+
+                link.append(roomName, received, owing, deadline);
+                link.addEventListener('click', () => openRoomLedger(item.room));
+                return link;
+            });
+            unpaidRentList.replaceChildren(header, ...rows);
         }
-        const header = document.createElement('div');
-        header.className = 'unpaid-reminder-header';
-        ['房间（租客）', '已收', '尚欠', '期限', '预计付款日'].forEach(text => {
+
+        const settledHeader = document.createElement('div');
+        settledHeader.className = 'settled-reminder-header';
+        ['房间（租客）', '已收', '结清日期', '下一次预计付款日'].forEach(text => {
             const cell = document.createElement('span');
             cell.textContent = text;
-            header.append(cell);
+            settledHeader.append(cell);
         });
-        const rows = unpaidLedgers.map(item => {
+        const settledRows = settledLedgers.map(item => {
             const link = document.createElement('button');
             link.type = 'button';
-            link.className = 'unpaid-room-link';
+            link.className = 'settled-room-link';
 
             const roomName = document.createElement('span');
             roomName.className = 'unpaid-room-name';
             roomName.textContent = `${item.room} 室（${item.name || '未填写租客姓名'}）`;
 
             const received = document.createElement('span');
-            received.className = 'unpaid-amount';
-            received.textContent = item.hasTotal ? `¥${item.paidAmount.toFixed(2)}` : '—';
+            received.textContent = `¥${item.paidAmount.toFixed(2)}`;
 
-            const owing = document.createElement('span');
-            owing.className = `unpaid-amount${item.outstanding > 0 ? ' has-balance' : ''}`;
-            owing.textContent = item.hasTotal ? `¥${item.outstanding.toFixed(2)}` : '未录账单';
-
-            const deadline = document.createElement('span');
-            deadline.className = `unpaid-deadline${item.overdue ? ' overdue' : ''}`;
-            const deadlineDate = document.createElement('span');
-            deadlineDate.textContent = item.deadline;
-            deadline.append(deadlineDate);
-            if (item.overdue) {
-                const delayedLabel = document.createElement('span');
-                delayedLabel.className = 'unpaid-delayed-label';
-                delayedLabel.textContent = '（已延期）';
-                deadline.append(delayedLabel);
-            }
+            const settlementDate = document.createElement('span');
+            settlementDate.textContent = item.settlementDate || '历史日期未保存';
 
             const prediction = document.createElement('span');
             prediction.className = 'unpaid-prediction';
@@ -2199,18 +2523,19 @@
                 predictionDelay.textContent = '暂无法估算';
             }
             prediction.append(predictionDate, predictionDelay);
-            link.append(roomName, received, owing, deadline, prediction);
+            link.append(roomName, received, settlementDate, prediction);
             link.addEventListener('click', () => openRoomLedger(item.room));
             return link;
         });
-        unpaidRentList.replaceChildren(header, ...rows);
+        if (settledRows.length) settledRentList.replaceChildren(settledHeader, ...settledRows);
+        else settledRentList.replaceChildren(settledHeader, Object.assign(document.createElement('div'), { textContent: '本月暂无已结清账单。' }));
     }
 
     function getRoomLedgerMonths(room) {
         const months = new Set();
         for (let index = 0; index < localStorage.length; index++) {
             const key = localStorage.key(index) || '';
-            const match = key.match(/^ledger_(\d{4}-\d{2})_(\d+)$/);
+            const match = key.match(/^ledger_(\d{4}-\d{2})_(.+)$/);
             if (match && match[2] === String(room) && Number(match[1].slice(5)) >= 1 && Number(match[1].slice(5)) <= 12) {
                 months.add(match[1]);
             }
@@ -2220,26 +2545,30 @@
 
     function getFullSettlementDate(ledger, total) {
         if (!ledger || !Array.isArray(ledger.paymentRecords)) return '';
-        const records = ledger.paymentRecords;
-        let hasUndatedPayment = false;
-        const datedPayments = [];
-        for (const record of records) {
+        const datedRecords = [];
+        let accumulated = 0;
+        for (const record of ledger.paymentRecords) {
             const amount = Number(record.amount);
-            if (!Number.isFinite(amount) || amount <= 0 || record.type === 'adjustment') continue;
+            if (!Number.isFinite(amount)) continue;
             if (record.type === 'opening' || !/^\d{4}-\d{2}-\d{2}$/.test(record.date || '')) {
-                hasUndatedPayment = true;
+                accumulated = Math.round((accumulated + amount) * 100) / 100;
                 continue;
             }
-            datedPayments.push(record);
+            datedRecords.push(record);
         }
-        if (hasUndatedPayment) return '';
-        datedPayments.sort((a, b) => a.date.localeCompare(b.date));
-        let accumulated = 0;
-        for (const record of datedPayments) {
-            accumulated = Math.round((accumulated + Number(record.amount)) * 100) / 100;
-            if (accumulated + 0.005 >= Number(total)) return record.date;
+        const billTotal = Number(total);
+        if (!Number.isFinite(billTotal)) return '';
+        let settlementDate = '';
+        let wasSettled = accumulated + 0.005 >= billTotal;
+        datedRecords.sort((a, b) => a.date.localeCompare(b.date));
+        for (const record of datedRecords) {
+            accumulated = Math.max(0, Math.round((accumulated + Number(record.amount)) * 100) / 100);
+            const isSettled = accumulated + 0.005 >= billTotal;
+            if (isSettled && !wasSettled) settlementDate = record.date;
+            if (!isSettled) settlementDate = '';
+            wasSettled = isSettled;
         }
-        return '';
+        return settlementDate;
     }
 
     function getDateDifferenceInDays(startDate, endDate) {
@@ -2323,7 +2652,7 @@
 
     // 页面打开时默认加载一次
     function showPage(pageName) {
-        const pageNames = ['overview', 'ledger', 'customers'];
+        const pageNames = ['history', 'overview', 'ledger', 'customers', 'data'];
         const activePage = pageNames.includes(pageName) ? pageName : 'overview';
 
         document.querySelectorAll('.page').forEach(page => {
@@ -2342,6 +2671,7 @@
         if (activePage === 'customers') loadRoomConfigForm();
         if (activePage === 'ledger') syncLedgerRoom();
         if (activePage === 'overview') updateMonthlySummary();
+        if (activePage === 'history') updateHistoryRevenue();
     }
 
     window.addEventListener('hashchange', () => showPage(window.location.hash.slice(1)));
