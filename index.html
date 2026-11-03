@@ -125,8 +125,8 @@
         .payment-record-edit:hover { background: #f0f8f4; }
         .payment-note-edit-button { background: #117864; }
         .payment-note-cancel-button { margin-top: 6px; background: #687570; }
-        .payment-composition-actions { display: flex; gap: 10px; }
-        .payment-composition-actions button { width: 50%; }
+        .payment-composition-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        .payment-composition-actions button { flex: 1 1 100px; width: auto; }
         .payment-composition-no { background: #687570; }
         .backup-preview-text { white-space: pre-line; line-height: 1.8; padding: 12px; border: 1px solid #65a77f; border-radius: 8px; background: #f4fbf6; }
         dialog { width: min(420px, calc(100vw - 32px)); border: 0; border-radius: 8px; padding: 24px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2); }
@@ -366,10 +366,7 @@
         <form method="dialog">
             <h2>确认收款内容</h2>
             <p id="paymentCompositionText"></p>
-            <div class="payment-composition-actions">
-                <button type="button" onclick="resolvePaymentComposition(true)">是</button>
-                <button type="button" class="payment-composition-no" onclick="resolvePaymentComposition(false)">否</button>
-            </div>
+            <div id="paymentCompositionActions" class="payment-composition-actions"></div>
         </form>
     </dialog>
     <dialog id="promiseDialog">
@@ -814,6 +811,7 @@
         const ledger = loadStock(getLedgerKey(room)) || {};
         const otherCharges = Array.isArray(ledger.otherCharges) ? ledger.otherCharges : [];
         const paidItems = ledger.paidItems || {};
+        const recordedPaidKeys = getPaymentRecordComponentKeys(ledger, roomData);
         const promisedDate = ledger.promisedDate || '';
         const total = ledger.total !== null && ledger.total !== undefined ? Number(ledger.total) : NaN;
         const hasTotal = Number.isFinite(total);
@@ -897,7 +895,7 @@
         document.getElementById('breakdownWater').textContent = `¥${waterCharge.toFixed(2)}`;
         document.getElementById('breakdownElectricLabel').textContent = `电费（${Number(ledger.electricity || 0)} 度 × ${ledgerElectricUnitPrice.toFixed(2)} 元/度）`;
         document.getElementById('breakdownElectric').textContent = `¥${electricCharge.toFixed(2)}`;
-        renderExtraChargeBreakdown(otherCharges, paidItems, hasTotal);
+        renderExtraChargeBreakdown(otherCharges, paidItems, hasTotal, recordedPaidKeys);
         const equationParts = [
             `固定房租 ¥${rentAmount.toFixed(2)}`,
             `水费 ¥${waterCharge.toFixed(2)}`,
@@ -923,7 +921,7 @@
         fullyPaidCheckbox.checked = hasTotal && total > 0 && paidAmount >= total;
         fullyPaidCheckbox.disabled = !hasTotal;
         document.querySelectorAll('#ledgerResult .payment-component-checkbox').forEach(checkbox => {
-            checkbox.checked = fullyPaidCheckbox.checked || Boolean(paidItems[checkbox.dataset.paidKey]);
+            checkbox.checked = fullyPaidCheckbox.checked || Boolean(paidItems[checkbox.dataset.paidKey]) || recordedPaidKeys.has(checkbox.dataset.paidKey);
             checkbox.disabled = !hasTotal || fullyPaidCheckbox.checked || Number(checkbox.dataset.paidAmount) <= 0;
         });
         paymentInput.disabled = !hasTotal || fullyPaidCheckbox.checked;
@@ -943,13 +941,18 @@
         updateMonthlySummary();
     }
 
+    function toMoneyCents(value) {
+        const amount = Number(value);
+        return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+    }
+
     function getPaidAmount(ledger, roomData, total) {
         if (!ledger) return 0;
         if (ledger.paidAmount !== undefined && ledger.paidAmount !== null && Number.isFinite(Number(ledger.paidAmount))) {
-            return Math.min(Math.max(0, Number(total) || 0), Math.max(0, Number(ledger.paidAmount)));
+            return Math.min(Math.max(0, toMoneyCents(total)), Math.max(0, toMoneyCents(ledger.paidAmount))) / 100;
         }
-        if (ledger.paid && Number.isFinite(Number(total))) return Number(total);
-        if (ledger.rentPaid && roomData) return Math.max(0, Number(roomData.rent) || 0);
+        if (ledger.paid && Number.isFinite(Number(total))) return Math.max(0, toMoneyCents(total)) / 100;
+        if (ledger.rentPaid && roomData) return Math.max(0, toMoneyCents(roomData.rent)) / 100;
         return 0;
     }
 
@@ -1291,13 +1294,13 @@
         const currentPaid = getPaidAmount(ledger, loadStock(LSK.room(room)), total);
         if (!date || date > getTodayISODate()) { alert('请选择今天或之前的收款日期。'); return; }
         if (amountInput === '' || !Number.isFinite(amount) || amount <= 0) { alert('本次收款金额请输入大于 0 的有效数字。'); return; }
-        if (amount > total - currentPaid) { alert(`本次收款不能超过尚欠金额 ¥${Math.max(0, total - currentPaid).toFixed(2)}。`); return; }
+        const dueCents = Math.max(0, toMoneyCents(total) - toMoneyCents(currentPaid));
+        const amountCents = toMoneyCents(amount);
+        if (amountCents > dueCents) { alert(`本次收款不能超过尚欠金额 ¥${(dueCents / 100).toFixed(2)}。`); return; }
         const pending = { type: 'record', room, key, ledger, currentPaid, total, date, amount, note };
-        const matchedLabels = findPaymentComponentCombination(ledger, loadStock(LSK.room(room)), amount);
-        if (matchedLabels) {
-            pendingPaymentSave = { ...pending, matchedLabels };
-            document.getElementById('paymentCompositionText').textContent = `本次填写金额 ¥${amount.toFixed(2)} 与“${matchedLabels.join(' + ')}”相符，确认收款内容是这些吗？`;
-            document.getElementById('paymentCompositionDialog').showModal();
+        const componentMatch = findPaymentComponentCombination(ledger, loadStock(LSK.room(room)), amount);
+        if (componentMatch) {
+            showPaymentCompositionDialog(pending, amount, componentMatch);
             return;
         }
         commitNewPaymentRecord(pending, note);
@@ -1307,9 +1310,10 @@
         const { room, key, ledger, currentPaid, total, date, amount } = pending;
         ensurePaymentRecords(ledger, currentPaid).push({
             id: `payment-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            date, amount: Math.round(amount * 100) / 100, note, type: 'payment'
+            date, amount: Math.round(amount * 100) / 100, note, type: 'payment',
+            ...(pending.componentKeys?.length ? { componentKeys: pending.componentKeys } : {})
         });
-        ledger.paidAmount = Math.round((currentPaid + amount) * 100) / 100;
+        ledger.paidAmount = (toMoneyCents(currentPaid) + toMoneyCents(amount)) / 100;
         if (ledger.paidAmount >= total) ledger.promisedDate = '';
         delete ledger.paid;
         delete ledger.rentPaid;
@@ -1450,7 +1454,7 @@
         return charges;
     }
 
-    function renderExtraChargeBreakdown(charges, paidItems, hasTotal) {
+    function renderExtraChargeBreakdown(charges, paidItems, hasTotal, recordedPaidKeys = new Set()) {
         const container = document.getElementById('breakdownExtraCharges');
         container.replaceChildren();
         charges.forEach((charge, index) => {
@@ -1465,7 +1469,7 @@
                 checkbox.className = 'payment-component-checkbox';
                 checkbox.dataset.paidKey = `extra:${charge.id || `legacy-${index}`}`;
                 checkbox.dataset.paidAmount = String(chargeAmount);
-                checkbox.checked = Boolean(paidItems[checkbox.dataset.paidKey]);
+                checkbox.checked = Boolean(paidItems[checkbox.dataset.paidKey]) || recordedPaidKeys.has(checkbox.dataset.paidKey);
                 checkbox.disabled = !hasTotal || chargeAmount <= 0;
                 checkbox.addEventListener('change', () => togglePaidComponent(checkbox));
                 label.className = 'component-paid';
@@ -1646,18 +1650,50 @@
         loadMonthlyLedger(room);
     }
 
+    function getPaymentComponents(ledger, roomData) {
+        return [
+            { key: 'rent', label: '固定房租', amount: Number(ledger.rentAmount ?? roomData?.rent) },
+            { key: 'water', label: '水费', amount: Number(ledger.waterCharge ?? Number(ledger.water || 0) * Number(ledger.waterUnitPrice ?? 10)) },
+            { key: 'electricity', label: '电费', amount: Number(ledger.electricCharge ?? Number(ledger.electricity || 0) * Number(ledger.electricUnitPrice ?? 1.3)) },
+            ...(Array.isArray(ledger.otherCharges)
+                ? ledger.otherCharges.map((charge, index) => ({
+                    key: `extra:${charge.id || `legacy-${index}`}`,
+                    label: charge.title || '其他款项',
+                    amount: Number(charge.amount)
+                }))
+                : [])
+        ];
+    }
+
+    function getPaymentRecordComponentKeys(ledger, roomData) {
+        const components = getPaymentComponents(ledger, roomData);
+        const componentsByKey = new Map(components.map(component => [component.key, component]));
+        const recordedKeys = new Set();
+        (Array.isArray(ledger.paymentRecords) ? ledger.paymentRecords : []).forEach(record => {
+            if (!Number.isFinite(Number(record.amount)) || Number(record.amount) <= 0 || record.type === 'adjustment') return;
+            const explicitKeys = Array.isArray(record.componentKeys) ? record.componentKeys : [];
+            if (explicitKeys.length) {
+                explicitKeys.forEach(key => { if (componentsByKey.has(key)) recordedKeys.add(key); });
+                return;
+            }
+            const note = getPaymentRecordDisplayNote(ledger, record);
+            if (!note) return;
+            const recordedLabels = note.split(/\s+\+\s+/);
+            components.forEach(component => {
+                if (recordedLabels.includes(component.label)) recordedKeys.add(component.key);
+            });
+        });
+        return recordedKeys;
+    }
+
     function findPaymentComponentCombination(ledger, roomData, amount) {
         const targetCents = Math.round(amount * 100);
         if (targetCents <= 0) return null;
-        const components = [
-            { label: '固定房租', amount: Number(ledger.rentAmount ?? roomData?.rent) },
-            { label: '水费', amount: Number(ledger.waterCharge ?? Number(ledger.water || 0) * Number(ledger.waterUnitPrice ?? 10)) },
-            { label: '电费', amount: Number(ledger.electricCharge ?? Number(ledger.electricity || 0) * Number(ledger.electricUnitPrice ?? 1.3)) },
-            ...(Array.isArray(ledger.otherCharges)
-                ? ledger.otherCharges.map(charge => ({ label: charge.title || '其他款项', amount: Number(charge.amount) }))
-                : [])
-        ].map(component => ({ ...component, cents: Math.round(component.amount * 100) }))
+        const components = getPaymentComponents(ledger, roomData)
+            .map(component => ({ ...component, cents: Math.round(component.amount * 100) }))
             .filter(component => Number.isFinite(component.amount) && component.cents > 0 && component.cents <= targetCents);
+        const exactMatches = components.filter(component => component.cents === targetCents);
+        if (exactMatches.length >= 2) return { type: 'ambiguous', components: exactMatches };
 
         const combinations = new Map([[0, []]]);
         for (const component of components) {
@@ -1671,7 +1707,35 @@
             }
         }
         const match = combinations.get(targetCents);
-        return match ? match.map(component => component.label) : null;
+        return match ? { type: 'match', components: match } : null;
+    }
+
+    function showPaymentCompositionDialog(pending, amount, componentMatch) {
+        pendingPaymentSave = { ...pending, componentMatch };
+        const actions = document.getElementById('paymentCompositionActions');
+        actions.replaceChildren();
+        const addButton = (label, callback, className = '') => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.textContent = label;
+            if (className) item.className = className;
+            item.addEventListener('click', callback);
+            actions.append(item);
+        };
+
+        if (componentMatch.type === 'ambiguous') {
+            document.getElementById('paymentCompositionText').textContent = `本次填写金额 ¥${amount.toFixed(2)} 同时符合以下款项，请选择实际收到的款项：`;
+            componentMatch.components.forEach(component => {
+                addButton(component.label, () => resolvePaymentComposition({ component }));
+            });
+            addButton('取消', () => resolvePaymentComposition(null), 'payment-composition-no');
+        } else {
+            const labels = componentMatch.components.map(component => component.label);
+            document.getElementById('paymentCompositionText').textContent = `本次填写金额 ¥${amount.toFixed(2)} 与“${labels.join(' + ')}”相符，确认收款内容是这些吗？`;
+            addButton('是', () => resolvePaymentComposition(true));
+            addButton('否', () => resolvePaymentComposition(false), 'payment-composition-no');
+        }
+        document.getElementById('paymentCompositionDialog').showModal();
     }
 
     function commitSavedPaymentAmount(pending, note) {
@@ -1682,7 +1746,8 @@
                 date: paymentDate,
                 amount: difference,
                 note,
-                type: 'payment'
+                type: 'payment',
+                ...(pending.componentKeys?.length ? { componentKeys: pending.componentKeys } : {})
             });
         } else if (difference < 0) {
             addPaymentAdjustment(ledger, currentPaid, nextPaid, '累计已收金额调整');
@@ -1695,17 +1760,29 @@
         showPartialPaymentDialog(room, ledger);
     }
 
-    function resolvePaymentComposition(confirmed) {
+    function resolvePaymentComposition(choice) {
         const pending = pendingPaymentSave;
         pendingPaymentSave = null;
         document.getElementById('paymentCompositionDialog').close();
         if (!pending) return;
+        if (choice === null) return;
+
+        let note;
+        if (choice && typeof choice === 'object' && choice.component) {
+            note = choice.component.label;
+            pending.componentKeys = [choice.component.key];
+        } else if (choice === true) {
+            const components = pending.componentMatch.components;
+            note = components.map(component => component.label).join(' + ');
+            pending.componentKeys = components.map(component => component.key);
+        } else {
+            note = pending.type === 'record' ? pending.note : '保存已收金额';
+        }
+
         if (pending.type === 'record') {
-            const note = confirmed ? pending.matchedLabels.join(' + ') : pending.note;
             commitNewPaymentRecord(pending, note);
             return;
         }
-        const note = confirmed ? pending.matchedLabels.join(' + ') : '保存已收金额';
         commitSavedPaymentAmount(pending, note);
     }
 
@@ -1725,15 +1802,15 @@
             alert('请输入不小于 0 的已收金额。');
             return;
         }
-        if (amount > total) {
+        if (toMoneyCents(amount) > toMoneyCents(total)) {
             alert('已收金额不能超过本月应收总额。');
             return;
         }
 
         const roomData = loadStock(LSK.room(room));
         const currentPaid = getPaidAmount(ledger, roomData, total);
-        const nextPaid = Math.round(amount * 100) / 100;
-        const difference = Math.round((nextPaid - currentPaid) * 100) / 100;
+        const nextPaid = toMoneyCents(amount) / 100;
+        const difference = (toMoneyCents(nextPaid) - toMoneyCents(currentPaid)) / 100;
         let paymentDate = getTodayISODate();
         if (difference > 0) {
             const paymentDateInput = document.getElementById('paymentDate').value;
@@ -1742,11 +1819,9 @@
                 alert('收款日期不能晚于今天。');
                 return;
             }
-            const matchedLabels = findPaymentComponentCombination(ledger, roomData, difference);
-            if (matchedLabels) {
-                pendingPaymentSave = { type: 'cumulative', room, key, ledger, currentPaid, nextPaid, difference, paymentDate, matchedLabels };
-                document.getElementById('paymentCompositionText').textContent = `本次填写金额 ¥${difference.toFixed(2)} 与“${matchedLabels.join(' + ')}”相符，确认收款内容是这些吗？`;
-                document.getElementById('paymentCompositionDialog').showModal();
+            const componentMatch = findPaymentComponentCombination(ledger, roomData, difference);
+            if (componentMatch) {
+                showPaymentCompositionDialog({ type: 'cumulative', room, key, ledger, currentPaid, nextPaid, difference, paymentDate }, difference, componentMatch);
                 return;
             }
         }
