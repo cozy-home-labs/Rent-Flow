@@ -127,6 +127,7 @@
         .payment-note-cancel-button { margin-top: 6px; background: #687570; }
         .payment-composition-actions { display: flex; flex-wrap: wrap; gap: 10px; }
         .payment-composition-actions button { flex: 1 1 100px; width: auto; }
+        .payment-composition-actions button.payment-composition-paid:disabled { background: #eeeeee; color: #777; border: 1px solid #c9c9c9; cursor: not-allowed; opacity: 1; }
         .payment-composition-no { background: #687570; }
         .backup-preview-text { white-space: pre-line; line-height: 1.8; padding: 12px; border: 1px solid #65a77f; border-radius: 8px; background: #f4fbf6; }
         dialog { width: min(420px, calc(100vw - 32px)); border: 0; border-radius: 8px; padding: 24px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2); }
@@ -335,6 +336,7 @@
         <section class="page" id="page-data">
             <div class="section">
                 <h2>💾 数据保存</h2>
+                <p class="meter-note">如果想要撤回本次所有填写内容，再次点“从网盘恢复历史数据”可以回到上次保存的内容。</p>
                 <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
                 <div class="section">
                     <h3>Google 网盘备份</h3>
@@ -811,7 +813,7 @@
         const ledger = loadStock(getLedgerKey(room)) || {};
         const otherCharges = Array.isArray(ledger.otherCharges) ? ledger.otherCharges : [];
         const paidItems = ledger.paidItems || {};
-        const recordedPaidKeys = getPaymentRecordComponentKeys(ledger, roomData);
+        const recordedPaidKeys = getPaidPaymentComponentKeys(ledger, roomData);
         const promisedDate = ledger.promisedDate || '';
         const total = ledger.total !== null && ledger.total !== undefined ? Number(ledger.total) : NaN;
         const hasTotal = Number.isFinite(total);
@@ -1686,6 +1688,14 @@
         return recordedKeys;
     }
 
+    function getPaidPaymentComponentKeys(ledger, roomData) {
+        const paidKeys = getPaymentRecordComponentKeys(ledger, roomData);
+        Object.entries(ledger.paidItems || {}).forEach(([key, amount]) => {
+            if (Number(amount) > 0) paidKeys.add(key);
+        });
+        return paidKeys;
+    }
+
     function findPaymentComponentCombination(ledger, roomData, amount) {
         const targetCents = Math.round(amount * 100);
         if (targetCents <= 0) return null;
@@ -1724,9 +1734,14 @@
         };
 
         if (componentMatch.type === 'ambiguous') {
-            document.getElementById('paymentCompositionText').textContent = `本次填写金额 ¥${amount.toFixed(2)} 同时符合以下款项，请选择实际收到的款项：`;
+            const roomData = loadStock(LSK.room(pending.room));
+            const paidKeys = getPaidPaymentComponentKeys(pending.ledger, roomData);
+            const componentNames = componentMatch.components.map(component => `${component.label}${paidKeys.has(component.key) ? '（已交）' : ''}`);
+            document.getElementById('paymentCompositionText').textContent = `本次填写金额同时符合以下款项：${componentNames.join('，')}。请选择：`;
             componentMatch.components.forEach(component => {
-                addButton(component.label, () => resolvePaymentComposition({ component }));
+                const isPaid = paidKeys.has(component.key);
+                addButton(`${component.label}${isPaid ? '（已交）' : ''}`, () => resolvePaymentComposition({ component }), isPaid ? 'payment-composition-paid' : '');
+                if (isPaid) actions.lastElementChild.disabled = true;
             });
             addButton('取消', () => resolvePaymentComposition(null), 'payment-composition-no');
         } else {
