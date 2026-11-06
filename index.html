@@ -12,9 +12,6 @@
         .month-control { display: flex; align-items: center; gap: 8px; }
         .month-control label { margin: 0; white-space: nowrap; }
         .month-control input { width: 160px; margin: 0; }
-        .main-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-        .nav-button { width: auto; background: transparent; color: #37534d; border: 1px solid #cbd8d4; padding: 10px 14px; border-radius: 6px; font-size: 15px; font-weight: bold; text-decoration: none; white-space: nowrap; }
-        .nav-button:hover, .nav-button.active { background: #117864; border-color: #117864; color: white; }
         .page { display: none; max-width: 900px; margin: 24px auto 0; }
         .page.active { display: block; }
         .section { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
@@ -140,8 +137,184 @@
             .app-header { align-items: flex-start; flex-direction: column; gap: 14px; }
             .month-control { width: 100%; }
             .month-control input { flex: 1; }
-            .main-nav { justify-content: flex-start; }
-            .nav-button { padding: 9px 11px; font-size: 14px; }
+        }
+
+        :root {
+            color-scheme: light;
+            --ink: #2d2736;
+            --muted-ink: #706778;
+            --lavender: #766486;
+            --lavender-deep: #655474;
+            --lavender-line: rgba(118, 100, 134, 0.18);
+            --cream: rgba(255, 253, 245, 0.88);
+        }
+        body {
+            color: var(--ink);
+            background: radial-gradient(ellipse at 12% 0%, #eee8f4 0, transparent 45%),
+                        linear-gradient(145deg, #f6f2f8 0%, #f6f4f0 55%, #f1edf4 100%);
+        }
+        .container {
+            background: var(--cream);
+            border: 1px solid rgba(118, 100, 134, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 18px 50px rgba(55, 43, 67, 0.08);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+        .app-header { padding-right: 64px; border-color: var(--lavender-line); }
+        h1, h2, h3, label { color: var(--ink); }
+        h1 { color: #51465e; letter-spacing: -0.025em; }
+        h2 { color: #655474; }
+        .section { border-color: var(--lavender-line); }
+        .room-status { background: rgba(239, 234, 245, 0.68); }
+        input, select, textarea {
+            color: var(--ink);
+            background-color: rgba(255, 255, 255, 0.86);
+            border-color: rgba(118, 100, 134, 0.24);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: 0;
+            border-color: var(--lavender);
+            box-shadow: 0 0 0 3px rgba(118, 100, 134, 0.14);
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button),
+        .drawer-link {
+            color: #fff;
+            background-color: var(--lavender);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(78, 61, 92, 0.08);
+            transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button):hover:not(:disabled),
+        .drawer-link:hover {
+            color: #fff;
+            background-color: var(--lavender-deep);
+            box-shadow: 0 6px 14px rgba(78, 61, 92, 0.16);
+            transform: translateY(-1px);
+        }
+        button:active:not(:disabled) { transform: translateY(0) scale(0.99); }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button):disabled {
+            color: #817a87 !important;
+            background: #ebe7ef !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button:focus-visible, a:focus-visible {
+            outline: 3px solid rgba(118, 100, 134, 0.28);
+            outline-offset: 2px;
+        }
+        .unpaid-room-link, .settled-room-link { color: var(--ink); background: transparent; }
+        .unpaid-room-link:hover, .settled-room-link:hover { color: var(--ink); background: rgba(118, 100, 134, 0.08); }
+        .unpaid-reminder-header, .settled-reminder-header { color: var(--ink); }
+        .meter-note, .security-note, .payment-record-meta { color: var(--muted-ink); }
+        .security-note { background: rgba(239, 234, 245, 0.62); }
+        .security-note a { color: var(--lavender-deep); }
+        .unpaid-room-link, .settled-room-link { border-bottom-color: var(--lavender-line); }
+        .payment-record-row, .memo-image-item {
+            border-color: var(--lavender-line);
+            background: rgba(255, 255, 255, 0.72);
+        }
+        .backup-preview-text {
+            border-color: var(--lavender-line);
+            background: rgba(239, 234, 245, 0.55);
+        }
+        dialog { color: var(--ink); background: #fffdf7; box-shadow: 0 16px 48px rgba(55, 43, 67, 0.18); }
+        .page.active { animation: page-enter 220ms ease both; }
+        @keyframes page-enter {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .nav-toggle {
+            position: fixed;
+            z-index: 1102;
+            top: 18px;
+            right: 20px;
+            display: grid;
+            place-content: center;
+            gap: 5px;
+            width: 46px;
+            height: 46px;
+            padding: 10px;
+            background: rgba(255, 253, 245, 0.92) !important;
+            border: 1px solid var(--lavender-line) !important;
+            border-radius: 12px;
+            box-shadow: 0 5px 16px rgba(55, 43, 67, 0.12) !important;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .nav-toggle:hover { background: #f0eaf5 !important; transform: none !important; }
+        .nav-toggle span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            border-radius: 2px;
+            background: var(--lavender-deep);
+            transition: transform 180ms ease, opacity 150ms ease;
+        }
+        .nav-toggle.is-open span:first-child { transform: translateY(7px) rotate(45deg); }
+        .nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+        .nav-toggle.is-open span:last-child { transform: translateY(-7px) rotate(-45deg); }
+        .drawer-backdrop {
+            position: fixed;
+            z-index: 1100;
+            inset: 0;
+            visibility: hidden;
+            opacity: 0;
+            background: linear-gradient(90deg, transparent 15%, rgba(45, 39, 54, 0.08) 52%, rgba(45, 39, 54, 0.30) 100%);
+            transition: opacity 220ms ease, visibility 220ms ease;
+        }
+        .nav-drawer {
+            position: fixed;
+            z-index: 1101;
+            inset: 0 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: min(340px, 88vw);
+            padding: 86px 22px 28px;
+            box-sizing: border-box;
+            visibility: hidden;
+            transform: translateX(102%);
+            background: rgba(255, 253, 247, 0.96);
+            border-left: 1px solid rgba(118, 100, 134, 0.1);
+            box-shadow: -18px 0 42px rgba(55, 43, 67, 0.08);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            transition: transform 240ms cubic-bezier(.2,.75,.25,1), visibility 240ms;
+        }
+        .nav-drawer h2 { margin: 0; font-size: 20px; }
+        .drawer-nav { display: grid; gap: 10px; }
+        .drawer-link {
+            display: block;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+        .drawer-link.active { background: var(--lavender-deep); }
+        .drawer-history-link {
+            display: inline-block;
+            margin: 8px 0 2px 16px;
+            color: var(--muted-ink);
+            font-size: 14px;
+            text-decoration: none;
+        }
+        .drawer-history-link:hover { color: var(--lavender-deep); text-decoration: underline; }
+        .drawer-history-link.active { color: var(--lavender-deep); font-weight: 700; }
+        body.drawer-open { overflow: hidden; }
+        body.drawer-open .drawer-backdrop { visibility: visible; opacity: 1; }
+        body.drawer-open .nav-drawer { visibility: visible; transform: translateX(0); }
+        @media (max-width: 760px) {
+            body { padding: 10px; }
+            .container { padding: 16px; }
+            .app-header { padding-right: 56px; }
+            .nav-toggle { top: 12px; right: 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
     </style>
 </head>
@@ -154,13 +327,6 @@
             <label for="stockMonthPicker">查看月份</label>
             <input type="month" id="stockMonthPicker" onchange="changeStockMonth()">
         </div>
-        <nav class="main-nav" aria-label="主导航">
-            <a class="nav-button" href="#history" data-page="history">收款总览</a>
-            <a class="nav-button" href="#overview" data-page="overview">每月收款</a>
-            <a class="nav-button" href="#ledger" data-page="ledger">每月记账</a>
-            <a class="nav-button" href="#customers" data-page="customers">租客信息</a>
-            <a class="nav-button" href="#data" data-page="data">数据保存</a>
-        </nav>
     </header>
 
     <main>
@@ -397,6 +563,23 @@
         </form>
     </dialog>
 </div>
+
+<button type="button" id="navToggle" class="nav-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="navDrawer" onclick="toggleNavigationDrawer()">
+    <span></span><span></span><span></span>
+</button>
+<div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true" onclick="closeNavigationDrawer()"></div>
+<aside id="navDrawer" class="nav-drawer" aria-hidden="true" aria-label="主导航菜单">
+    <h2>导航菜单</h2>
+    <nav class="drawer-nav">
+        <a class="drawer-link" href="#customers" data-page="customers">租客信息</a>
+        <a class="drawer-link" href="#ledger" data-page="ledger">每月记账</a>
+        <div>
+            <a class="drawer-link" href="#overview" data-page="overview">每月收款</a>
+            <a class="drawer-history-link" href="#history" data-page="history">历史收款总览</a>
+        </div>
+        <a class="drawer-link" href="#data" data-page="data">数据保存</a>
+    </nav>
+</aside>
 
 <script src="https://accounts.google.com/gsi/client" defer></script>
 <script src="google-drive-sync.js" defer></script>
@@ -2685,25 +2868,6 @@
         return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
     }
 
-    const CHINA_HOLIDAY_DATES = new Set([
-        '2025-01-01', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31', '2025-02-01', '2025-02-02', '2025-02-03', '2025-02-04',
-        '2025-04-04', '2025-04-05', '2025-04-06', '2025-05-01', '2025-05-02', '2025-05-03', '2025-05-04', '2025-05-05',
-        '2025-05-31', '2025-06-01', '2025-06-02', '2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04', '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08',
-        '2026-01-01', '2026-01-02', '2026-01-03', '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20', '2026-02-21', '2026-02-22', '2026-02-23',
-        '2026-04-04', '2026-04-05', '2026-04-06', '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05',
-        '2026-06-19', '2026-06-20', '2026-06-21', '2026-09-25', '2026-09-26', '2026-09-27', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07'
-    ]);
-
-    function movePredictionToNextWorkday(date) {
-        let adjustedDate = date;
-        for (let count = 0; count < 14; count++) {
-            const weekday = new Date(`${adjustedDate}T00:00:00Z`).getUTCDay();
-            if (weekday !== 0 && weekday !== 6 && !CHINA_HOLIDAY_DATES.has(adjustedDate)) return adjustedDate;
-            adjustedDate = addDaysToISODate(adjustedDate, 1);
-        }
-        return adjustedDate;
-    }
-
     function getPredictedPaymentInfo(room, roomData, throughMonth) {
         const pastMonths = getRoomLedgerMonths(room).filter(month => month <= throughMonth).reverse();
         const delays = [];
@@ -2730,10 +2894,10 @@
         }
         const delayDays = Math.round(averageDelay);
         const nextDueDate = getMonthlyDueDate(getNextMonth(throughMonth), roomData.day).date;
-        const predictedDate = movePredictionToNextWorkday(addDaysToISODate(nextDueDate, delayDays));
+        const predictedDate = addDaysToISODate(nextDueDate, delayDays);
         return {
             date: predictedDate,
-            daysAfterDue: Math.max(0, getDateDifferenceInDays(nextDueDate, predictedDate))
+            daysAfterDue: delayDays
         };
     }
 
@@ -2746,6 +2910,36 @@
         else showPage('ledger');
     }
 
+    function setNavigationDrawerOpen(isOpen) {
+        const drawer = document.getElementById('navDrawer');
+        const backdrop = document.getElementById('drawerBackdrop');
+        const toggle = document.getElementById('navToggle');
+        const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
+        document.body.classList.toggle('drawer-open', isOpen);
+        drawer.setAttribute('aria-hidden', String(!isOpen));
+        backdrop.setAttribute('aria-hidden', String(!isOpen));
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        toggle.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
+        toggle.classList.toggle('is-open', isOpen);
+        if (!isOpen && wasOpen) toggle.focus();
+    }
+
+    function toggleNavigationDrawer() {
+        const toggle = document.getElementById('navToggle');
+        setNavigationDrawerOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    }
+
+    function closeNavigationDrawer() {
+        setNavigationDrawerOpen(false);
+    }
+
+    document.querySelectorAll('#navDrawer a').forEach(link => {
+        link.addEventListener('click', closeNavigationDrawer);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeNavigationDrawer();
+    });
+
     // 页面打开时默认加载一次
     function showPage(pageName) {
         const pageNames = ['history', 'overview', 'ledger', 'customers', 'data'];
@@ -2754,7 +2948,7 @@
         document.querySelectorAll('.page').forEach(page => {
             page.classList.toggle('active', page.id === `page-${activePage}`);
         });
-        document.querySelectorAll('.nav-button').forEach(link => {
+        document.querySelectorAll('[data-page]').forEach(link => {
             const isActive = link.dataset.page === activePage;
             link.classList.toggle('active', isActive);
             if (isActive) {
@@ -2770,7 +2964,10 @@
         if (activePage === 'history') updateHistoryRevenue();
     }
 
-    window.addEventListener('hashchange', () => showPage(window.location.hash.slice(1)));
+    window.addEventListener('hashchange', () => {
+        showPage(window.location.hash.slice(1));
+        closeNavigationDrawer();
+    });
     window.addEventListener('beforeunload', event => {
         if (localStorage.getItem(BACKUP_PENDING_KEY) !== '1') return;
         event.preventDefault();
