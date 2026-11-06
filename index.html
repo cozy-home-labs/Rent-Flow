@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>青妈包租婆管理系统</title>
+    <title>房屋管理系统</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1120px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
@@ -149,7 +149,7 @@
 
 <div class="container">
     <header class="app-header">
-        <h1>🌸 青妈包租婆管理系统</h1>
+        <h1>🌸 房租管理系统</h1>
         <div class="month-control">
             <label for="stockMonthPicker">查看月份</label>
             <input type="month" id="stockMonthPicker" onchange="changeStockMonth()">
@@ -359,7 +359,7 @@
                 </div>
                 <footer class="security-note">
                     <p><strong>💡 安全提示：</strong>Google Drive 备份会在本机加密后上传；解密密码不会写入备份文件。请妥善保管密码，忘记后无法恢复。</p>
-                    <p>若设备、Google 账号或网站代码被他人控制，仍可能有风险。停止使用时，可在 <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Google 账号已连接的应用</a>中撤销「青妈包租婆管理系统」的访问权限。撤销权限不会自动删除已有备份；如需删除，请在 Google Drive 手动删除备份文件。</p>
+                    <p>若设备、Google 账号或网站代码被他人控制，仍可能有风险。停止使用时，可在 <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Google 账号已连接的应用</a>中撤销「房屋管理系统」的访问权限。撤销权限不会自动删除已有备份；如需删除，请在 Google Drive 手动删除备份文件。</p>
                 </footer>
             </div>
         </section>
@@ -2042,7 +2042,7 @@
             else if (paid > 0) paymentRows.push([month, room, '历史记录', paid, '旧账单仅保存累计金额，未保存逐笔日期']);
         });
         const buildingRates = data.building_config ? JSON.parse(data.building_config) : { waterUnitPrice: 10, electricUnitPrice: 1.3 };
-        const info = [['青妈包租婆管理系统备份'], ['导出日期', exportedAt], ['说明', '可在系统中导入此 Excel 备份。请不要修改隐藏的“系统恢复数据”工作表。'], ['房间数量', rooms.length], ['账单数量', ledgers.length], ['整栋水费单价（元/度）', Number(buildingRates.waterUnitPrice)], ['整栋电费单价（元/度）', Number(buildingRates.electricUnitPrice)]];
+        const info = [['房屋管理系统备份'], ['导出日期', exportedAt], ['说明', '可在系统中导入此 Excel 备份。请不要修改隐藏的“系统恢复数据”工作表。'], ['房间数量', rooms.length], ['账单数量', ledgers.length], ['整栋水费单价（元/度）', Number(buildingRates.waterUnitPrice)], ['整栋电费单价（元/度）', Number(buildingRates.electricUnitPrice)]];
         const hidden = [['键', '系统恢复数据'], ...Object.entries(data)];
         const styles = `<Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B6D8C3"/></Borders></Style><Style ss:ID="Header"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#4F9C78" ss:Pattern="Solid"/><Alignment ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#26734D"/></Borders></Style></Styles>`;
         return `<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${styles}${makeExcelSheet('说明', info)}${makeExcelSheet('租客信息', roomRows)}${makeExcelSheet('账单汇总', ledgerRows)}${makeExcelSheet('收款明细', paymentRows)}${makeExcelSheet('系统恢复数据', hidden, true)}</Workbook>`;
@@ -2261,7 +2261,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `青妈包租婆Excel数据备份_${getCurrentStockMonth()}.xlsx`;
+            link.download = `房屋管理系统Excel数据备份_${getCurrentStockMonth()}.xlsx`;
             link.click();
             nativeStorageSetItem.call(localStorage, BACKUP_EXPORTED_KEY, '1');
             nativeStorageRemoveItem.call(localStorage, BACKUP_PENDING_KEY);
