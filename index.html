@@ -295,15 +295,7 @@
             text-decoration: none;
         }
         .drawer-link.active { background: var(--lavender-deep); }
-        .drawer-history-link {
-            display: inline-block;
-            margin: 8px 0 2px 16px;
-            color: var(--muted-ink);
-            font-size: 14px;
-            text-decoration: none;
-        }
-        .drawer-history-link:hover { color: var(--lavender-deep); text-decoration: underline; }
-        .drawer-history-link.active { color: var(--lavender-deep); font-weight: 700; }
+        .drawer-monthly-group { display: grid; gap: 10px; }
         body.drawer-open { overflow: hidden; }
         body.drawer-open .drawer-backdrop { visibility: visible; opacity: 1; }
         body.drawer-open .nav-drawer { visibility: visible; transform: translateX(0); }
@@ -573,9 +565,9 @@
     <nav class="drawer-nav">
         <a class="drawer-link" href="#customers" data-page="customers">租客信息</a>
         <a class="drawer-link" href="#ledger" data-page="ledger">每月记账</a>
-        <div>
+        <div class="drawer-monthly-group">
             <a class="drawer-link" href="#overview" data-page="overview">每月收款</a>
-            <a class="drawer-history-link" href="#history" data-page="history">历史收款总览</a>
+            <a class="drawer-link" href="#history" data-page="history">历史收款总览</a>
         </div>
         <a class="drawer-link" href="#data" data-page="data">数据保存</a>
     </nav>
