@@ -35,6 +35,10 @@
         .history-range-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .history-range-controls label { margin-top: 0; }
         .history-range-controls input:disabled { background: #eeeeee; color: #777; border-color: #c9c9c9; }
+        .clear-range-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .clear-range-controls label { margin-top: 0; }
+        .clear-data-button { width: auto; margin: 0 0 12px; padding: 10px 14px; background: #fff; color: #a93226; border: 1px solid #d6a09a; }
+        .clear-data-button:hover { background: #fdf2f2; }
         .history-revenue-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
         .history-revenue-actions button { width: auto; }
         .history-revenue-result { margin-top: 12px; font-weight: bold; }
@@ -192,6 +196,15 @@
             background-color: var(--lavender-deep);
             box-shadow: 0 6px 14px rgba(78, 61, 92, 0.16);
             transform: translateY(-1px);
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button).clear-data-button {
+            color: #a93226;
+            background: #fff;
+            border-color: #d6a09a;
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button).clear-data-button:hover:not(:disabled) {
+            color: #a93226;
+            background: #fdf2f2;
         }
         button:active:not(:disabled) { transform: translateY(0) scale(0.99); }
         button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button):disabled {
@@ -505,7 +518,6 @@
         <section class="page" id="page-data">
             <div class="section">
                 <h2>数据保存</h2>
-                <p class="meter-note">如果想要撤回本次所有填写内容，再次点“从网盘恢复历史数据”可以回到上次保存的内容。</p>
                 <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
                 <div class="section">
                     <h3>Google 网盘备份</h3>
@@ -530,6 +542,24 @@
                     <p><strong>💡 安全提示：</strong>Google Drive 备份会在本机加密后上传；解密密码不会写入备份文件。请妥善保管密码，忘记后无法恢复。</p>
                     <p>若设备、Google 账号或网站代码被他人控制，仍可能有风险。停止使用时，可在 <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">Google 账号已连接的应用</a>中撤销「房屋管理系统」的访问权限。撤销权限不会自动删除已有备份；如需删除，请在 Google Drive 手动删除备份文件。</p>
                 </footer>
+            </div>
+        </section>
+        <section class="page" id="page-clear-data">
+            <div class="section">
+                <h2>清空数据</h2>
+                <p class="meter-note">如果想要撤回本次所有填写内容，再次点“从网盘恢复历史数据”可以回到上次保存的内容。</p>
+                <div class="clear-range-controls">
+                    <div>
+                        <label for="clearDataStartMonth">清空开始月份</label>
+                        <input type="month" id="clearDataStartMonth">
+                    </div>
+                    <div>
+                        <label for="clearDataEndMonth">清空结束月份</label>
+                        <input type="month" id="clearDataEndMonth">
+                    </div>
+                </div>
+                <button type="button" class="clear-data-button" onclick="clearMonthlyDataRange()">清空所选月份的全部填写内容</button>
+                <p class="meter-note">只清除本机所选月份的账单和收款记录，不影响租客及房屋资料。现有 Google 网盘和 Excel 备份会保留，可用于撤回；如需让备份也更新为清空后的数据，请先前往「数据保存」页面，再使用网盘同步和 Excel 导出。</p>
             </div>
         </section>
     </main>
@@ -581,6 +611,7 @@
             <a class="drawer-link" href="#history" data-page="history">历史收款总览</a>
         </div>
         <a class="drawer-link" href="#data" data-page="data">数据保存</a>
+        <a class="drawer-link" href="#clear-data" data-page="clear-data">清空数据</a>
     </nav>
 </aside>
 
@@ -654,6 +685,62 @@
         if (dialog.open) dialog.close();
         syncLedgerRoom();
         updateMonthlySummary();
+    }
+
+    function clearMonthlyDataRange() {
+        const startMonth = document.getElementById('clearDataStartMonth').value;
+        const endMonth = document.getElementById('clearDataEndMonth').value;
+        const validMonth = value => /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+        if (!validMonth(startMonth) || !validMonth(endMonth)) {
+            alert('请选择有效的开始月份和结束月份。');
+            return;
+        }
+        if (startMonth > endMonth) {
+            alert('结束月份不能早于开始月份。');
+            return;
+        }
+
+        const entries = [];
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            const match = key && key.match(/^ledger_(\d{4}-(0[1-9]|1[0-2]))_.+$/);
+            if (match && match[1] >= startMonth && match[1] <= endMonth) {
+                entries.push([key, localStorage.getItem(key)]);
+            }
+        }
+        if (!entries.length) {
+            alert('所选月份范围内没有已保存的账单或收款记录。');
+            return;
+        }
+
+        const rangeLabel = startMonth === endMonth ? startMonth : `${startMonth} 至 ${endMonth}`;
+        if (!confirm(`确定清空 ${rangeLabel} 的全部已保存账单、收款记录和备注吗？此操作只清除本机数据；现有 Google 网盘和 Excel 备份不会被覆盖。`)) return;
+
+        const removedEntries = [];
+        try {
+            entries.forEach(([key, value]) => {
+                localStorage.removeItem(key);
+                removedEntries.push([key, value]);
+            });
+        } catch (error) {
+            try {
+                removedEntries.forEach(([key, value]) => localStorage.setItem(key, value));
+            } catch (rollbackError) {
+                console.error('清空失败且本地数据回滚不完整。', rollbackError);
+                alert('清空失败，且本机数据未能完整恢复。请勿关闭页面，并立即检查数据或从网盘恢复。');
+                return;
+            }
+            console.error('清空所选月份数据失败。', error);
+            alert('清空失败，所选数据已恢复。请检查浏览器存储权限后重试。');
+            return;
+        }
+
+        const currentMonth = getStockMonth();
+        if (currentMonth >= startMonth && currentMonth <= endMonth) {
+            loadMonthlyLedger(document.getElementById('ledgerRoom').value);
+        }
+        updateMonthlySummary();
+        alert(`已清空 ${rangeLabel} 的 ${entries.length} 条账单记录。现有网盘和 Excel 备份未更改。`);
     }
 
     function loadStock(key) {
@@ -2945,7 +3032,7 @@
 
     // 页面打开时默认加载一次
     function showPage(pageName) {
-        const pageNames = ['history', 'overview', 'ledger', 'customers', 'data'];
+        const pageNames = ['history', 'overview', 'ledger', 'customers', 'data', 'clear-data'];
         const activePage = pageNames.includes(pageName) ? pageName : 'overview';
 
         document.querySelectorAll('.page').forEach(page => {
@@ -2987,6 +3074,8 @@
         monthPicker.value = savedMonth && /^\d{4}-\d{2}$/.test(savedMonth)
             ? savedMonth
             : getCurrentStockMonth();
+        document.getElementById('clearDataStartMonth').value = monthPicker.value;
+        document.getElementById('clearDataEndMonth').value = monthPicker.value;
         loadRoomConfigForm();
         syncLedgerRoom();
         showPage(window.location.hash.slice(1) || 'overview');
