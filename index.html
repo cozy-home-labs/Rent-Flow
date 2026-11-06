@@ -295,7 +295,17 @@
             font-weight: 650;
             text-decoration: none;
         }
-        .drawer-link.active { background: var(--lavender-deep); }
+        .drawer-link.active {
+            color: #382d61;
+            background: #e2daf6;
+            border-color: #8b78c7;
+            box-shadow: inset 4px 0 0 #7963b5, 0 3px 10px rgba(78, 61, 92, 0.14);
+        }
+        .drawer-link.active:hover {
+            color: #382d61;
+            background: #d8cef1;
+            border-color: #7963b5;
+        }
         .drawer-monthly-group { display: grid; gap: 10px; }
         body.drawer-open { overflow: hidden; }
         body.drawer-open .drawer-backdrop { visibility: visible; opacity: 1; }
