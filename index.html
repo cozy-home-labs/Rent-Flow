@@ -1592,13 +1592,19 @@
         let preservedCheckedAmount = 0;
         Object.entries(previousLedger.paidItems || {}).forEach(([componentKey, paidValue]) => {
             const priorPaidValue = Number(paidValue);
-            if (!Number.isFinite(availablePaidComponents[componentKey])
-                || availablePaidComponents[componentKey] <= 0
+            const recalculatedComponentAmount = availablePaidComponents[componentKey];
+            if (!Number.isFinite(recalculatedComponentAmount)
+                || recalculatedComponentAmount <= 0
                 || !Number.isFinite(priorPaidValue)
                 || priorPaidValue <= 0
-                || preservedCheckedAmount + priorPaidValue > nextPaid + 0.005) return;
-            nextPaidItems[componentKey] = priorPaidValue;
-            preservedCheckedAmount += priorPaidValue;
+            ) return;
+
+            // Keep the item's paid cache aligned with its recalculated amount,
+            // without treating a price increase as money already received.
+            const refreshedPaidValue = Math.min(priorPaidValue, recalculatedComponentAmount);
+            if (preservedCheckedAmount + refreshedPaidValue > nextPaid + 0.005) return;
+            nextPaidItems[componentKey] = refreshedPaidValue;
+            preservedCheckedAmount += refreshedPaidValue;
         });
         const paymentRecords = Array.isArray(previousLedger.paymentRecords)
             ? [...previousLedger.paymentRecords]
