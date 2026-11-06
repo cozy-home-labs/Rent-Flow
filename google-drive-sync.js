@@ -4,8 +4,8 @@
  * HTML setup:
  *   <script src="https://accounts.google.com/gsi/client" async defer></script>
  *   <script src="google-drive-sync.js" defer></script>
- *   <button type="button" onclick="uploadToGoogleDrive()">🌸 一键同步到 Google 网盘（防手机丢失）</button>
- *   <button type="button" onclick="loadFromGoogleDrive()">🔄 从网盘恢复历史数据</button>
+ *   <button type="button" onclick="uploadToGoogleDrive()">一键同步到 Google 网盘（防手机丢失）</button>
+ *   <button type="button" onclick="loadFromGoogleDrive()">从网盘恢复历史数据</button>
  *   <p id="driveSyncStatus" role="status" aria-live="polite"></p>
  *
  * Replace YOUR_CLIENT_ID with the OAuth 2.0 Web client ID.
@@ -33,7 +33,7 @@
         const status = document.getElementById('driveSyncStatus');
         if (!status) return;
         status.textContent = message;
-        status.style.color = isError ? '#b03a2e' : '#117864';
+        status.style.color = isError ? '#b03a2e' : '#6657A5';
     }
 
     function initGoogleDriveAuth() {
@@ -276,7 +276,7 @@
     }
 
     async function uploadToGoogleDrive() {
-        const password = prompt('🔒 请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
+        const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
         if (password === null || password.length === 0) {
             setStatus('已取消同步。');
             return;
@@ -330,14 +330,14 @@
             try {
                 downloaded = JSON.parse(await response.text());
             } catch (_) {
-                alert('❌ 密码错误或备份损坏，无法恢复数据！');
+                alert('密码错误或备份损坏，无法恢复数据！');
                 setStatus('备份内容无法读取，当前本地数据未更改。', true);
                 return;
             }
 
             let payload;
             if (downloaded?.format === ENCRYPTED_BACKUP_FORMAT) {
-                const password = prompt('🔑 请输入您备份时设置的专属解密密码：');
+                const password = prompt('请输入您备份时设置的专属解密密码：');
                 if (password === null || password.length === 0) {
                     setStatus('已取消恢复，当前本地数据未更改。');
                     return;
@@ -345,7 +345,7 @@
                 try {
                     payload = await decryptBackup(downloaded, password);
                 } catch (_) {
-                    alert('❌ 密码错误或备份损坏，无法恢复数据！');
+                    alert('密码错误或备份损坏，无法恢复数据！');
                     setStatus('密码错误或备份损坏，当前本地数据未更改。', true);
                     return;
                 }
@@ -356,13 +356,13 @@
                 }
                 payload = downloaded;
             } else {
-                alert('❌ 密码错误或备份损坏，无法恢复数据！');
+                alert('密码错误或备份损坏，无法恢复数据！');
                 setStatus('备份格式不正确，当前本地数据未更改。', true);
                 return;
             }
 
             if (!isValidBackupPayload(payload)) {
-                alert('❌ 密码错误或备份损坏，无法恢复数据！');
+                alert('密码错误或备份损坏，无法恢复数据！');
                 setStatus('备份数据格式不正确，当前本地数据未更改。', true);
                 return;
             }

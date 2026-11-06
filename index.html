@@ -12,29 +12,26 @@
         .month-control { display: flex; align-items: center; gap: 8px; }
         .month-control label { margin: 0; white-space: nowrap; }
         .month-control input { width: 160px; margin: 0; }
-        .main-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-        .nav-button { width: auto; background: transparent; color: #37534d; border: 1px solid #cbd8d4; padding: 10px 14px; border-radius: 6px; font-size: 15px; font-weight: bold; text-decoration: none; white-space: nowrap; }
-        .nav-button:hover, .nav-button.active { background: #117864; border-color: #117864; color: white; }
         .page { display: none; max-width: 900px; margin: 24px auto 0; }
         .page.active { display: block; }
         .section { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        h2 { color: #16a085; font-size: 18px; }
+        h2 { color: #6657A5; font-size: 18px; }
         label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
         input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 10px; }
         textarea { width: 100%; min-height: 110px; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font: inherit; resize: vertical; }
-        button { width: 100%; background-color: #1abc9c; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #16a085; }
+        button { width: 100%; background-color: #6657A5; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #56478F; }
         .room-status { background: #e8f8f5; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .ledger-total { font-size: 32px; font-weight: bold; color: #117864; text-align: center; margin: 12px 0; }
+        .ledger-total { font-size: 32px; font-weight: bold; color: #6657A5; text-align: center; margin: 12px 0; }
         .negative-amount { color: #b03a2e; }
         .component-paid { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: normal; }
         .component-paid input { width: auto; margin: 0; }
         .paid-label { display: flex; align-items: center; gap: 8px; font-size: 16px; }
         .paid-label input { width: auto; margin: 0; }
-        .summary-total { display: inline-block; min-width: 145px; font-size: 22px; font-weight: bold; color: #117864; }
+        .summary-total { display: inline-block; min-width: 145px; font-size: 22px; font-weight: bold; color: #6657A5; }
         .summary-totals > div { display: grid; grid-template-columns: 190px 1fr; align-items: baseline; gap: 8px; }
-        .history-revenue-total { margin: 8px 0 12px; text-align: left; background: #117864; }
-        .history-revenue-total:hover { background: #0e6655; }
+        .history-revenue-total { margin: 8px 0 12px; text-align: left; background: #6657A5; }
+        .history-revenue-total:hover { background: #56478F; }
         .history-range-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .history-range-controls label { margin-top: 0; }
         .history-range-controls input:disabled { background: #eeeeee; color: #777; border-color: #c9c9c9; }
@@ -80,50 +77,50 @@
             .extra-charge-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(100px, 1fr) 42px; gap: 8px; align-items: start; }
             .extra-charge-row input { margin-bottom: 8px; }
             .extra-charge-remove { width: 42px; height: 42px; padding: 0; background: #a93226; font-size: 22px; }
-            .add-charge-button { width: auto; margin: 2px 0 12px; padding: 10px 14px; background: white; color: #117864; border: 1px solid #1abc9c; }
+            .add-charge-button { width: auto; margin: 2px 0 12px; padding: 10px 14px; background: white; color: #6657A5; border: 1px solid #6657A5; }
             .add-charge-button:hover { background: #f0faf7; }
         .clear-ledger-button { width: auto; margin: 0 auto 10px; padding: 8px 12px; background: white; color: #a93226; border: 1px solid #a93226; font-size: 14px; }
         .clear-ledger-button:hover { background: #fdf2f2; }
-        .memo-status { min-height: 20px; color: #117864; font-size: 14px; }
-        .security-note { max-width: 900px; margin: 22px auto 0; padding: 12px 14px; color: #5f706a; background: #f4f8f6; border-radius: 8px; font-size: 13px; line-height: 1.7; }
+        .memo-status { min-height: 20px; color: #6657A5; font-size: 14px; }
+        .security-note { max-width: 900px; margin: 22px auto 0; padding: 12px 14px; color: #706778; background: #f4f8f6; border-radius: 8px; font-size: 13px; line-height: 1.7; }
         .security-note p { margin: 4px 0; }
-        .security-note a { color: #117864; }
+        .security-note a { color: #6657A5; }
         .memo-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin: 10px 0; }
         .memo-image-item { position: relative; min-width: 0; padding: 6px; border: 1px solid #c7dfd0; border-radius: 8px; background: #fbfefc; }
         .memo-image-preview-button { display: block; width: 100%; padding: 0; background: transparent; }
         .memo-image-preview-button:hover { background: transparent; }
         .memo-image-thumb { display: block; width: 100%; height: 92px; object-fit: cover; border-radius: 4px; }
-        .memo-image-name { overflow: hidden; margin: 5px 0; color: #53665d; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+        .memo-image-name { overflow: hidden; margin: 5px 0; color: #706778; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
         .memo-image-delete { width: 100%; padding: 5px; background: #fff; color: #a93226; border: 1px solid #d6a09a; font-size: 13px; }
         .memo-image-preview-dialog { width: min(900px, calc(100vw - 32px)); }
         #memoImagePreview { display: block; max-width: 100%; max-height: 75vh; margin: 0 auto; object-fit: contain; }
-        .meter-note { color: #5f706a; font-size: 13px; line-height: 1.6; margin: 0 0 12px; }
+        .meter-note { color: #706778; font-size: 13px; line-height: 1.6; margin: 0 0 12px; }
         .rent-change-warning { color: #805600; background: #fff7df; border: 1px solid #ead18b; border-radius: 6px; padding: 10px; }
         .meter-input-row { display: flex; align-items: center; gap: 8px; }
         .meter-input-row input { flex: 1; min-width: 0; margin-bottom: 10px; }
         .meter-input-row input.meter-locked { background: #eeeeee; color: #777; border-color: #c9c9c9; }
         .building-rate-input:disabled { background: #eeeeee; color: #777; border-color: #c9c9c9; }
-        .meter-change-button { width: auto; flex: 0 0 auto; padding: 9px 12px; margin-bottom: 10px; background: #f2f6f4; color: #53665d; border: 1px solid #bdcbc3; font-size: 13px; }
+        .meter-change-button { width: auto; flex: 0 0 auto; padding: 9px 12px; margin-bottom: 10px; background: #f2f6f4; color: #6657A5; border: 1px solid #6657A5; font-size: 13px; }
         .meter-change-button:hover { background: #e7efea; }
-        .quiet-action-button { width: auto; margin: 8px 8px 0 0; padding: 10px 14px; background: #fff; color: #356b58; border: 1px solid #91b7a5; }
+        .quiet-action-button { width: auto; margin: 8px 8px 0 0; padding: 10px 14px; background: #fff; color: #6657A5; border: 1px solid #6657A5; }
         .quiet-action-button:hover { background: #f0f8f4; }
-        .backup-export-button { color: #23734b; border: 2px solid #65a77f; margin: 0; }
+        .backup-export-button { color: #6657A5; border: 2px solid #6657A5; margin: 0; }
         .backup-export-button:hover { background: #eaf6ee; }
-        .drive-sync-button { width: 100%; margin-top: 4px; background: #117864; }
-        .drive-sync-button:hover { background: #0e6655; }
+        .drive-sync-button { width: 100%; margin-top: 4px; background: #6657A5; }
+        .drive-sync-button:hover { background: #56478F; }
         .customer-config-actions { display: grid; justify-items: start; gap: 10px; }
         .customer-config-actions .save-room-button { width: 100%; }
         .payment-record-list { display: grid; gap: 8px; margin-top: 10px; }
         .payment-record-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; padding: 10px; border: 1px solid #c7dfd0; border-radius: 6px; background: #fbfefc; }
-        .payment-record-meta { color: #5f706a; font-size: 13px; }
-        .payment-record-amount { color: #23734b; font-weight: bold; text-align: right; }
+        .payment-record-meta { color: #706778; font-size: 13px; }
+        .payment-record-amount { color: #6657A5; font-weight: bold; text-align: right; }
         .payment-record-adjustment { color: #a65b29; }
         .payment-record-actions { display: flex; justify-content: flex-end; gap: 6px; grid-column: 2; }
         .payment-record-actions button { width: auto; padding: 6px 10px; background: #fff; font-size: 13px; }
         .payment-record-remove { color: #a93226; border: 1px solid #d6a09a; }
-        .payment-record-edit { color: #356b58; border: 1px solid #91b7a5; }
+        .payment-record-edit { color: #6657A5; border: 1px solid #6657A5; }
         .payment-record-edit:hover { background: #f0f8f4; }
-        .payment-note-edit-button { background: #117864; }
+        .payment-note-edit-button { background: #6657A5; }
         .payment-note-cancel-button { margin-top: 6px; background: #687570; }
         .payment-composition-actions { display: flex; flex-wrap: wrap; gap: 10px; }
         .payment-composition-actions button { flex: 1 1 100px; width: auto; }
@@ -140,8 +137,177 @@
             .app-header { align-items: flex-start; flex-direction: column; gap: 14px; }
             .month-control { width: 100%; }
             .month-control input { flex: 1; }
-            .main-nav { justify-content: flex-start; }
-            .nav-button { padding: 9px 11px; font-size: 14px; }
+        }
+
+        :root {
+            color-scheme: light;
+            --ink: #2d2736;
+            --muted-ink: #706778;
+            --lavender: #6657A5;
+            --lavender-deep: #56478F;
+            --lavender-line: rgba(102, 87, 165, 0.20);
+            --cream: rgba(255, 253, 245, 0.88);
+        }
+        body {
+            color: var(--ink);
+            background: radial-gradient(ellipse at 12% 0%, #eee8f4 0, transparent 45%),
+                        linear-gradient(145deg, #f6f2f8 0%, #f6f4f0 55%, #f1edf4 100%);
+        }
+        .container {
+            background: var(--cream);
+            border: 1px solid var(--lavender-line);
+            border-radius: 16px;
+            box-shadow: 0 18px 50px rgba(55, 43, 67, 0.08);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+        .app-header { padding-right: 64px; border-color: var(--lavender-line); }
+        h1, h2, h3, label { color: var(--ink); }
+        h1 { color: var(--lavender-deep); letter-spacing: -0.025em; }
+        h2 { color: var(--lavender); }
+        .section { border-color: var(--lavender-line); }
+        .room-status { background: rgba(239, 234, 245, 0.68); }
+        input, select, textarea {
+            color: var(--ink);
+            background-color: rgba(255, 255, 255, 0.86);
+            border-color: var(--lavender-line);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: 0;
+            border-color: var(--lavender);
+            box-shadow: 0 0 0 3px rgba(102, 87, 165, 0.14);
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button),
+        .drawer-link {
+            color: #fff;
+            background-color: var(--lavender);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(78, 61, 92, 0.08);
+            transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button):hover:not(:disabled),
+        .drawer-link:hover {
+            color: #fff;
+            background-color: var(--lavender-deep);
+            box-shadow: 0 6px 14px rgba(78, 61, 92, 0.16);
+            transform: translateY(-1px);
+        }
+        button:active:not(:disabled) { transform: translateY(0) scale(0.99); }
+        button:not(.unpaid-room-link):not(.settled-room-link):not(.memo-image-preview-button):disabled {
+            color: #817a87 !important;
+            background: #ebe7ef !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button:focus-visible, a:focus-visible {
+            outline: 3px solid rgba(102, 87, 165, 0.28);
+            outline-offset: 2px;
+        }
+        .unpaid-room-link, .settled-room-link { color: var(--ink); background: transparent; }
+        .unpaid-room-link:hover, .settled-room-link:hover { color: var(--ink); background: rgba(102, 87, 165, 0.08); }
+        .unpaid-reminder-header, .settled-reminder-header { color: var(--ink); }
+        .meter-note, .security-note, .payment-record-meta { color: var(--muted-ink); }
+        .security-note { background: rgba(239, 234, 245, 0.62); }
+        .ledger-total, .summary-total, .payment-record-amount, .memo-status, .security-note a { color: var(--lavender); }
+        .memo-image-name, .unpaid-prediction, .ledger-prediction { color: var(--muted-ink); }
+        .unpaid-room-link, .settled-room-link { border-bottom-color: var(--lavender-line); }
+        .payment-record-row, .memo-image-item {
+            border-color: var(--lavender-line);
+            background: rgba(255, 255, 255, 0.72);
+        }
+        .backup-preview-text {
+            border-color: var(--lavender-line);
+            background: rgba(239, 234, 245, 0.55);
+        }
+        dialog { color: var(--ink); background: #fffdf7; box-shadow: 0 16px 48px rgba(55, 43, 67, 0.18); }
+        .page.active { animation: page-enter 220ms ease both; }
+        @keyframes page-enter {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .nav-toggle {
+            position: fixed;
+            z-index: 1102;
+            top: 18px;
+            right: 20px;
+            display: grid;
+            place-content: center;
+            gap: 5px;
+            width: 46px;
+            height: 46px;
+            padding: 10px;
+            background: var(--lavender) !important;
+            border: 1px solid var(--lavender) !important;
+            border-radius: 12px;
+            box-shadow: 0 5px 16px rgba(55, 43, 67, 0.12) !important;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .nav-toggle:hover { background: var(--lavender-deep) !important; transform: none !important; }
+        .nav-toggle span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            border-radius: 2px;
+            background: #fff;
+            transition: transform 180ms ease, opacity 150ms ease;
+        }
+        .nav-toggle.is-open span:first-child { transform: translateY(7px) rotate(45deg); }
+        .nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+        .nav-toggle.is-open span:last-child { transform: translateY(-7px) rotate(-45deg); }
+        .drawer-backdrop {
+            position: fixed;
+            z-index: 1100;
+            inset: 0;
+            visibility: hidden;
+            opacity: 0;
+            background: linear-gradient(90deg, transparent 15%, rgba(45, 39, 54, 0.08) 52%, rgba(45, 39, 54, 0.30) 100%);
+            transition: opacity 220ms ease, visibility 220ms ease;
+        }
+        .nav-drawer {
+            position: fixed;
+            z-index: 1101;
+            inset: 0 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: min(340px, 88vw);
+            padding: 86px 22px 28px;
+            box-sizing: border-box;
+            visibility: hidden;
+            transform: translateX(102%);
+            background: rgba(255, 253, 247, 0.96);
+            border-left: 1px solid var(--lavender-line);
+            box-shadow: -18px 0 42px rgba(55, 43, 67, 0.08);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            transition: transform 240ms cubic-bezier(.2,.75,.25,1), visibility 240ms;
+        }
+        .nav-drawer h2 { margin: 0; font-size: 20px; }
+        .drawer-nav { display: grid; gap: 10px; }
+        .drawer-link {
+            display: block;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+        .drawer-link.active { background: var(--lavender-deep); }
+        .drawer-monthly-group { display: grid; gap: 10px; }
+        body.drawer-open { overflow: hidden; }
+        body.drawer-open .drawer-backdrop { visibility: visible; opacity: 1; }
+        body.drawer-open .nav-drawer { visibility: visible; transform: translateX(0); }
+        @media (max-width: 760px) {
+            body { padding: 10px; }
+            .container { padding: 16px; }
+            .app-header { padding-right: 56px; }
+            .nav-toggle { top: 12px; right: 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
     </style>
 </head>
@@ -154,19 +320,12 @@
             <label for="stockMonthPicker">查看月份</label>
             <input type="month" id="stockMonthPicker" onchange="changeStockMonth()">
         </div>
-        <nav class="main-nav" aria-label="主导航">
-            <a class="nav-button" href="#history" data-page="history">收款总览</a>
-            <a class="nav-button" href="#overview" data-page="overview">每月收款</a>
-            <a class="nav-button" href="#ledger" data-page="ledger">每月记账</a>
-            <a class="nav-button" href="#customers" data-page="customers">租客信息</a>
-            <a class="nav-button" href="#data" data-page="data">数据保存</a>
-        </nav>
     </header>
 
     <main>
         <section class="page active" id="page-overview">
             <div class="section">
-                <h2>📣 每月收款</h2>
+                <h2>每月收款</h2>
                 <p id="summaryPeriod"></p>
                 <div class="room-status summary-totals">
                     <div><span>已录账单应收总额：</span><span id="expectedIncome" class="summary-total">¥0.00</span></div>
@@ -182,7 +341,7 @@
 
         <section class="page" id="page-history">
             <div class="section">
-                <h2>📚 收款总览</h2>
+                <h2>收款总览</h2>
                 <button type="button" id="allTimeRevenueButton" class="history-revenue-total" onclick="showAllTimeRevenue()">全部历史累计已收：¥0.00</button>
                 <p id="historyRevenuePeriod" class="meter-note"></p>
                 <div class="history-range-controls">
@@ -208,7 +367,7 @@
 
         <section class="page" id="page-ledger">
             <div class="section">
-                <h2>🧾 每月流水记账</h2>
+                <h2>每月流水记账</h2>
                 <div id="ledgerPeriod" class="ledger-period">
                     <div class="ledger-period-line">
                         <span id="ledgerMonthText"></span>
@@ -299,7 +458,7 @@
 
         <section class="page" id="page-customers">
             <div class="section">
-                <h2>🛠️ 租客信息编辑</h2>
+                <h2>租客信息编辑</h2>
                 <label for="setupRoom">输入房间号：</label>
                 <input type="text" id="setupRoom" placeholder="例如：401、东侧套房" onchange="loadRoomConfigForm()">
 
@@ -318,7 +477,7 @@
                 </div>
             </div>
             <div class="section">
-                <h2>🏠 房屋信息编辑</h2>
+                <h2>房屋信息编辑</h2>
                 <p class="meter-note">以下水电单价适用于整栋房屋的所有房间。修改单价不会自动改动已经计算好的历史账单；需要更新某个月时，请在该月记账页面重新计算总账。</p>
                 <label for="buildingWaterUnitPrice">水费单价（元/度）</label>
                 <div class="meter-input-row">
@@ -335,13 +494,13 @@
         </section>
         <section class="page" id="page-data">
             <div class="section">
-                <h2>💾 数据保存</h2>
+                <h2>数据保存</h2>
                 <p class="meter-note">如果想要撤回本次所有填写内容，再次点“从网盘恢复历史数据”可以回到上次保存的内容。</p>
                 <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
                 <div class="section">
                     <h3>Google 网盘备份</h3>
-                    <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">🌸 一键同步到 Google 网盘（防手机丢失）</button>
-                    <button type="button" class="quiet-action-button" onclick="loadFromGoogleDrive()">🔄 从网盘恢复历史数据</button>
+                    <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">一键同步到 Google 网盘（防手机丢失）</button>
+                    <button type="button" class="quiet-action-button" onclick="loadFromGoogleDrive()">从网盘恢复历史数据</button>
                     <p id="driveSyncStatus" class="memo-status" role="status" aria-live="polite"></p>
                     <p class="meter-note"><strong>Google 网盘相关告知：</strong><br>新增或修改内容会自动保存在当前浏览器。需要跨设备备份时，请点上方 Google 网盘同步；关闭网页前仍会提醒导出 Excel 备份。</p>
                 </div>
@@ -397,6 +556,23 @@
         </form>
     </dialog>
 </div>
+
+<button type="button" id="navToggle" class="nav-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="navDrawer" onclick="toggleNavigationDrawer()">
+    <span></span><span></span><span></span>
+</button>
+<div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true" onclick="closeNavigationDrawer()"></div>
+<aside id="navDrawer" class="nav-drawer" aria-hidden="true" aria-label="主导航菜单">
+    <h2>导航菜单</h2>
+    <nav class="drawer-nav">
+        <a class="drawer-link" href="#customers" data-page="customers">租客信息</a>
+        <a class="drawer-link" href="#ledger" data-page="ledger">每月记账</a>
+        <div class="drawer-monthly-group">
+            <a class="drawer-link" href="#overview" data-page="overview">每月收款</a>
+            <a class="drawer-link" href="#history" data-page="history">历史收款总览</a>
+        </div>
+        <a class="drawer-link" href="#data" data-page="data">数据保存</a>
+    </nav>
+</aside>
 
 <script src="https://accounts.google.com/gsi/client" defer></script>
 <script src="google-drive-sync.js" defer></script>
@@ -2685,25 +2861,6 @@
         return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
     }
 
-    const CHINA_HOLIDAY_DATES = new Set([
-        '2025-01-01', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31', '2025-02-01', '2025-02-02', '2025-02-03', '2025-02-04',
-        '2025-04-04', '2025-04-05', '2025-04-06', '2025-05-01', '2025-05-02', '2025-05-03', '2025-05-04', '2025-05-05',
-        '2025-05-31', '2025-06-01', '2025-06-02', '2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04', '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08',
-        '2026-01-01', '2026-01-02', '2026-01-03', '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20', '2026-02-21', '2026-02-22', '2026-02-23',
-        '2026-04-04', '2026-04-05', '2026-04-06', '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05',
-        '2026-06-19', '2026-06-20', '2026-06-21', '2026-09-25', '2026-09-26', '2026-09-27', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07'
-    ]);
-
-    function movePredictionToNextWorkday(date) {
-        let adjustedDate = date;
-        for (let count = 0; count < 14; count++) {
-            const weekday = new Date(`${adjustedDate}T00:00:00Z`).getUTCDay();
-            if (weekday !== 0 && weekday !== 6 && !CHINA_HOLIDAY_DATES.has(adjustedDate)) return adjustedDate;
-            adjustedDate = addDaysToISODate(adjustedDate, 1);
-        }
-        return adjustedDate;
-    }
-
     function getPredictedPaymentInfo(room, roomData, throughMonth) {
         const pastMonths = getRoomLedgerMonths(room).filter(month => month <= throughMonth).reverse();
         const delays = [];
@@ -2730,10 +2887,10 @@
         }
         const delayDays = Math.round(averageDelay);
         const nextDueDate = getMonthlyDueDate(getNextMonth(throughMonth), roomData.day).date;
-        const predictedDate = movePredictionToNextWorkday(addDaysToISODate(nextDueDate, delayDays));
+        const predictedDate = addDaysToISODate(nextDueDate, delayDays);
         return {
             date: predictedDate,
-            daysAfterDue: Math.max(0, getDateDifferenceInDays(nextDueDate, predictedDate))
+            daysAfterDue: delayDays
         };
     }
 
@@ -2746,6 +2903,36 @@
         else showPage('ledger');
     }
 
+    function setNavigationDrawerOpen(isOpen) {
+        const drawer = document.getElementById('navDrawer');
+        const backdrop = document.getElementById('drawerBackdrop');
+        const toggle = document.getElementById('navToggle');
+        const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
+        document.body.classList.toggle('drawer-open', isOpen);
+        drawer.setAttribute('aria-hidden', String(!isOpen));
+        backdrop.setAttribute('aria-hidden', String(!isOpen));
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        toggle.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
+        toggle.classList.toggle('is-open', isOpen);
+        if (!isOpen && wasOpen) toggle.focus();
+    }
+
+    function toggleNavigationDrawer() {
+        const toggle = document.getElementById('navToggle');
+        setNavigationDrawerOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    }
+
+    function closeNavigationDrawer() {
+        setNavigationDrawerOpen(false);
+    }
+
+    document.querySelectorAll('#navDrawer a').forEach(link => {
+        link.addEventListener('click', closeNavigationDrawer);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeNavigationDrawer();
+    });
+
     // 页面打开时默认加载一次
     function showPage(pageName) {
         const pageNames = ['history', 'overview', 'ledger', 'customers', 'data'];
@@ -2754,7 +2941,7 @@
         document.querySelectorAll('.page').forEach(page => {
             page.classList.toggle('active', page.id === `page-${activePage}`);
         });
-        document.querySelectorAll('.nav-button').forEach(link => {
+        document.querySelectorAll('[data-page]').forEach(link => {
             const isActive = link.dataset.page === activePage;
             link.classList.toggle('active', isActive);
             if (isActive) {
@@ -2770,7 +2957,10 @@
         if (activePage === 'history') updateHistoryRevenue();
     }
 
-    window.addEventListener('hashchange', () => showPage(window.location.hash.slice(1)));
+    window.addEventListener('hashchange', () => {
+        showPage(window.location.hash.slice(1));
+        closeNavigationDrawer();
+    });
     window.addEventListener('beforeunload', event => {
         if (localStorage.getItem(BACKUP_PENDING_KEY) !== '1') return;
         event.preventDefault();
