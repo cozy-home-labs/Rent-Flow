@@ -9,13 +9,17 @@
  *   <p id="driveSyncStatus" role="status" aria-live="polite"></p>
  *
  * Replace YOUR_CLIENT_ID with the OAuth 2.0 Web client ID.
- * Required OAuth scope: https://www.googleapis.com/auth/drive.file
+ * Required OAuth scopes: https://www.googleapis.com/auth/drive.file and
+ * https://www.googleapis.com/auth/userinfo.email
  */
 (() => {
     'use strict';
 
     const GOOGLE_CLIENT_ID = '51963447636-omne8ibrk4ff6ij11ojcbmusin3sngtp.apps.googleusercontent.com';
     const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+    const EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email';
+    const ACCOUNT_EMAIL_KEY = '__rental_google_account_email';
+    const GOOGLE_USERINFO_API = 'https://www.googleapis.com/oauth2/v3/userinfo';
     const BACKUP_FILENAME = 'Rent-Flow-Backup.json';
     const BACKUP_MIME_TYPE = 'application/json';
     const ENCRYPTED_BACKUP_FORMAT = 'rent-flow-encrypted-backup';
@@ -28,6 +32,38 @@
     let accessToken = null;
     let tokenExpiresAt = 0;
     let pendingTokenRequest = null;
+    let accountEmail = localStorage.getItem(ACCOUNT_EMAIL_KEY) || '';
+    let accountEmailToken = null;
+
+    function showGoogleAccount(email) {
+        const status = document.getElementById('googleAccountStatus');
+        if (status) status.textContent = `当前绑定的 Google 账号：${email || '未绑定'}`;
+    }
+
+    function saveGoogleAccountEmail(email, token) {
+        const normalizedEmail = typeof email === 'string' ? email.trim() : '';
+        if (!normalizedEmail) throw new Error('Google 未返回账号邮箱，请检查授权后重试。');
+        localStorage.setItem(ACCOUNT_EMAIL_KEY, normalizedEmail);
+        accountEmail = normalizedEmail;
+        accountEmailToken = token;
+        showGoogleAccount(accountEmail);
+    }
+
+    async function updateGoogleAccountEmail(token) {
+        if (accountEmail && accountEmailToken === token) return;
+
+        showGoogleAccount('加载中...');
+        const response = await fetch(GOOGLE_USERINFO_API, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            throw new Error(`读取 Google 账号邮箱失败（${response.status}）。请重新授权后重试。`);
+        }
+        const profile = await response.json();
+        saveGoogleAccountEmail(profile.email, token);
+    }
+
+    showGoogleAccount(accountEmail);
 
     function setStatus(message, isError = false) {
         const status = document.getElementById('driveSyncStatus');
@@ -47,10 +83,11 @@
 
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: GOOGLE_CLIENT_ID,
-            scope: DRIVE_SCOPE,
+            scope: `${DRIVE_SCOPE} ${EMAIL_SCOPE}`,
             callback: (response) => {
                 if (!pendingTokenRequest) return;
                 if (response?.error || !response?.access_token) {
+                    showGoogleAccount(accountEmail);
                     pendingTokenRequest.reject(new Error(
                         response?.error_description || response?.error || '没有取得 Google 授权，请重试。'
                     ));
@@ -64,6 +101,7 @@
             },
             error_callback: (error) => {
                 console.error('Google 授权窗口错误：', error);
+                showGoogleAccount(accountEmail);
                 if (pendingTokenRequest) {
                     pendingTokenRequest.reject(new Error(error?.message || 'Google 授权窗口无法打开。'));
                     pendingTokenRequest = null;
@@ -86,13 +124,28 @@
             pendingTokenRequest = { resolve, reject };
 
             // GIS token 会过期，且只保存在内存中；每次用户主动同步时重新请求。
-            client.requestAccessToken({ prompt: '' });
+            showGoogleAccount('加载中...');
+            try {
+                client.requestAccessToken({ prompt: '' });
+            } catch (error) {
+                showGoogleAccount(accountEmail);
+                pendingTokenRequest = null;
+                reject(error);
+            }
         });
     }
 
     async function getDriveToken() {
-        if (accessToken && Date.now() < tokenExpiresAt) return accessToken;
-        return requestDriveAccess();
+        try {
+            if (!accessToken || Date.now() >= tokenExpiresAt) {
+                accessToken = await requestDriveAccess();
+            }
+            await updateGoogleAccountEmail(accessToken);
+            return accessToken;
+        } catch (error) {
+            showGoogleAccount(accountEmail);
+            throw error;
+        }
     }
 
     async function driveRequest(url, options = {}) {
@@ -125,7 +178,7 @@
         const entries = [];
         for (let index = 0; index < localStorage.length; index += 1) {
             const key = localStorage.key(index);
-            if (key !== null) entries.push([key, localStorage.getItem(key)]);
+            if (key !== null && key !== ACCOUNT_EMAIL_KEY) entries.push([key, localStorage.getItem(key)]);
         }
         return {
             format: 'rent-flow-localstorage-backup',
@@ -384,6 +437,7 @@
                 for (const [key, value] of payload.entries) {
                     if (value !== null) localStorage.setItem(key, value);
                 }
+                localStorage.setItem(ACCOUNT_EMAIL_KEY, accountEmail);
             } catch (writeError) {
                 localStorage.clear();
                 for (const [key, value] of previousEntries) {

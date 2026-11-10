@@ -521,6 +521,7 @@
                 <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
                 <div class="section">
                     <h3>Google 网盘备份</h3>
+                    <p id="googleAccountStatus" class="meter-note" role="status" aria-live="polite">当前绑定的 Google 账号：未绑定</p>
                     <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">一键同步到 Google 网盘（防手机丢失）</button>
                     <button type="button" class="quiet-action-button" onclick="loadFromGoogleDrive()">从网盘恢复历史数据</button>
                     <p id="driveSyncStatus" class="memo-status" role="status" aria-live="polite"></p>
@@ -626,17 +627,18 @@
     };
     const BACKUP_PENDING_KEY = '__rental_excel_backup_pending';
     const BACKUP_EXPORTED_KEY = '__rental_excel_backup_exported';
+    const GOOGLE_ACCOUNT_EMAIL_KEY = '__rental_google_account_email';
     const nativeStorageSetItem = Storage.prototype.setItem;
     const nativeStorageRemoveItem = Storage.prototype.removeItem;
     Storage.prototype.setItem = function(key, value) {
         nativeStorageSetItem.call(this, key, value);
-        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY) {
+        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && key !== GOOGLE_ACCOUNT_EMAIL_KEY) {
             nativeStorageSetItem.call(this, BACKUP_PENDING_KEY, '1');
         }
     };
     Storage.prototype.removeItem = function(key) {
         nativeStorageRemoveItem.call(this, key);
-        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY) {
+        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && key !== GOOGLE_ACCOUNT_EMAIL_KEY) {
             nativeStorageSetItem.call(this, BACKUP_PENDING_KEY, '1');
         }
     };
