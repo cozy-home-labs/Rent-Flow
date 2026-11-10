@@ -165,7 +165,8 @@
             setStatus('当前没有已绑定的 Google 账号。');
             return;
         }
-        if (!confirm('确定取消当前 Google 账号绑定吗？取消后，下次同步或恢复时需要重新授权。')) return;
+        const accountLabel = accountEmail || '当前授权账号';
+        if (!confirm(`确定取消绑定 Google 账号「${accountLabel}」吗？取消后，下次同步或恢复时需要重新授权。`)) return;
 
         const tokenToRevoke = accessToken;
         if (!tokenToRevoke) {
@@ -384,7 +385,38 @@
         return uploadResponse.json();
     }
 
+    function promptForBackupPassword() {
+        const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
+        if (password === null || password.length === 0) {
+            setStatus('已取消同步。');
+            return null;
+        }
+        if (password.length < 12) {
+            alert('为加强保护，请设置至少 12 个字符的密码短语。');
+            setStatus('密码长度不足，未上传。', true);
+            return null;
+        }
+        const repeatedPassword = prompt('请再次输入专属解密密码以确认：');
+        if (repeatedPassword === null || repeatedPassword.length === 0) {
+            setStatus('已取消同步。');
+            return null;
+        }
+        if (password !== repeatedPassword) {
+            alert('两次输入的密码不一致，未上传备份。');
+            setStatus('两次输入的密码不一致，未上传。', true);
+            return null;
+        }
+
+        return password;
+    }
+
     async function uploadToGoogleDrive() {
+        let password = null;
+        if (!accountEmail) {
+            password = promptForBackupPassword();
+            if (password === null) return;
+        }
+
         setStatus('正在连接 Google 并获取账号授权…');
         try {
             await getDriveToken();
@@ -395,26 +427,11 @@
             return;
         }
 
-        const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
-        if (password === null || password.length === 0) {
-            setStatus('已取消同步。');
-            return;
+        if (password === null) {
+            password = promptForBackupPassword();
+            if (password === null) return;
         }
-        if (password.length < 12) {
-            alert('为加强保护，请设置至少 12 个字符的密码短语。');
-            setStatus('密码长度不足，未上传。', true);
-            return;
-        }
-        const repeatedPassword = prompt('请再次输入专属解密密码以确认：');
-        if (repeatedPassword === null || repeatedPassword.length === 0) {
-            setStatus('已取消同步。');
-            return;
-        }
-        if (password !== repeatedPassword) {
-            alert('两次输入的密码不一致，未上传备份。');
-            setStatus('两次输入的密码不一致，未上传。', true);
-            return;
-        }
+
         setStatus('正在本地加密并连接 Google Drive…');
         try {
             const payload = collectLocalStorage();

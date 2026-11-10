@@ -522,8 +522,11 @@
                 <div class="section">
                     <h3>Google 网盘备份</h3>
                     <p id="googleAccountStatus" class="meter-note" role="status" aria-live="polite">当前绑定的 Google 账号：未绑定</p>
+                    <p class="meter-note">未绑定时点击“一键同步”后，请先设置备份密码，再选择 Google 账号完成授权绑定。</p>
+                    <p class="meter-note">专属解密密码至少 12 位，并须包含大写英文字母、小写英文字母、数字和至少一个符号（例如 !、@、#）。请牢记密码；忘记后无法恢复网盘备份。</p>
                     <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">一键同步到 Google 网盘（防手机丢失）</button>
                     <button type="button" class="quiet-action-button" onclick="loadFromGoogleDrive()">从网盘恢复历史数据</button>
+                    <button type="button" class="quiet-action-button" onclick="changeGoogleDriveBackupPassword()">更改专属解密密码</button>
                     <button type="button" class="quiet-action-button clear-data-button" onclick="cancelGoogleAccountBinding()">取消绑定</button>
                     <p id="driveSyncStatus" class="memo-status" role="status" aria-live="polite"></p>
                     <p class="meter-note"><strong>Google 网盘相关告知：</strong><br>新增或修改内容会自动保存在当前浏览器。需要跨设备备份时，请点上方 Google 网盘同步；关闭网页前仍会提醒导出 Excel 备份。</p>
