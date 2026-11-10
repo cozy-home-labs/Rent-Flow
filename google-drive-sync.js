@@ -561,7 +561,7 @@
             if (!file) throw new Error(`没有找到 ${BACKUP_FILENAME}，请先同步一份网盘备份。`);
 
             const response = await fetch(`${DRIVE_API}/files/${encodeURIComponent(file.id)}?alt=media`, {
-                headers: { Authorization: `****** }
+                headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (!response.ok) throw new Error(`下载网盘备份失败（${response.status}）。`);
 
