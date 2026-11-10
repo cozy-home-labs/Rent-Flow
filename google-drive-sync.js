@@ -74,6 +74,9 @@
 
     function initGoogleDriveAuth() {
         if (tokenClient) return tokenClient;
+        if (location.protocol === 'file:') {
+            throw new Error('当前网页是从本地文件（file://）打开的，Google 不允许从本地文件授权。请通过 HTTPS 网站地址访问，并在 Google OAuth 设置中加入对应的网站来源。');
+        }
         if (!window.google?.accounts?.oauth2) {
             throw new Error('Google 登录组件还没加载完成，请稍后重试。');
         }
@@ -382,6 +385,16 @@
     }
 
     async function uploadToGoogleDrive() {
+        setStatus('正在连接 Google 并获取账号授权…');
+        try {
+            await getDriveToken();
+        } catch (error) {
+            console.error(error);
+            setStatus(error.message || 'Google 授权失败，请检查网络和账号设置。', true);
+            alert(error.message || 'Google 授权失败，请检查网络和账号设置。');
+            return;
+        }
+
         const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
         if (password === null || password.length === 0) {
             setStatus('已取消同步。');
@@ -402,10 +415,8 @@
             setStatus('两次输入的密码不一致，未上传。', true);
             return;
         }
-
         setStatus('正在本地加密并连接 Google Drive…');
         try {
-            await getDriveToken();
             const payload = collectLocalStorage();
             const encryptedPayload = await encryptBackup(payload, password);
             const result = await uploadBackupFile(encryptedPayload);
