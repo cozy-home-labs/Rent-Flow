@@ -9,8 +9,9 @@
  *   <p id="driveSyncStatus" role="status" aria-live="polite"></p>
  *
  * Replace YOUR_CLIENT_ID with the OAuth 2.0 Web client ID.
- * Required OAuth scopes: https://www.googleapis.com/auth/drive.file and
- * https://www.googleapis.com/auth/userinfo.email
+ * Required OAuth scopes: https://www.googleapis.com/auth/drive.file,
+ * https://www.googleapis.com/auth/userinfo.email and
+ * https://www.googleapis.com/auth/userinfo.profile
  */
 (() => {
     'use strict';
@@ -18,7 +19,13 @@
     const GOOGLE_CLIENT_ID = '51963447636-omne8ibrk4ff6ij11ojcbmusin3sngtp.apps.googleusercontent.com';
     const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
     const EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email';
+    const PROFILE_SCOPE = 'https://www.googleapis.com/auth/userinfo.profile';
+    const PROFILE_SCOPES = `${EMAIL_SCOPE} ${PROFILE_SCOPE}`;
+    const DRIVE_SCOPES = `${DRIVE_SCOPE} ${PROFILE_SCOPES}`;
     const ACCOUNT_EMAIL_KEY = '__rental_google_account_email';
+    const ACCOUNT_PROFILE_KEY = '__rental_google_account_profile';
+    const DISPLAY_NAME_KEY = '__rental_google_display_name';
+    const LOCAL_ACCOUNT_KEYS = new Set([ACCOUNT_EMAIL_KEY, ACCOUNT_PROFILE_KEY, DISPLAY_NAME_KEY]);
     const GOOGLE_USERINFO_API = 'https://www.googleapis.com/oauth2/v3/userinfo';
     const BACKUP_FILENAME = 'Rent-Flow-Backup.json';
     const BACKUP_MIME_TYPE = 'application/json';
@@ -29,15 +36,48 @@
     const DRIVE_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3';
 
     let tokenClient = null;
+    let tokenClientScopes = '';
     let accessToken = null;
+    let accessTokenScopes = '';
     let tokenExpiresAt = 0;
     let pendingTokenRequest = null;
     let accountEmail = localStorage.getItem(ACCOUNT_EMAIL_KEY) || '';
     let accountEmailToken = null;
+    let accountProfile = {};
+
+    try {
+        const savedProfile = JSON.parse(localStorage.getItem(ACCOUNT_PROFILE_KEY) || 'null');
+        accountProfile = savedProfile && typeof savedProfile === 'object' && !Array.isArray(savedProfile)
+            ? savedProfile
+            : {};
+    } catch {
+        accountProfile = {};
+    }
 
     function showGoogleAccount(email) {
         const status = document.getElementById('googleAccountStatus');
-        if (status) status.textContent = `当前绑定的 Google 账号：${email || '未绑定'}`;
+        if (status) status.textContent = `当前账号：${email || '未绑定'}`;
+        const avatar = document.getElementById('accountAvatar');
+        const placeholder = document.getElementById('accountAvatarPlaceholder');
+        if (avatar && placeholder) {
+            if (email && typeof accountProfile.picture === 'string' && accountProfile.picture.startsWith('https://')) {
+                avatar.src = accountProfile.picture;
+                avatar.onerror = () => {
+                    avatar.hidden = true;
+                    placeholder.hidden = false;
+                };
+                avatar.hidden = false;
+                placeholder.hidden = true;
+            } else {
+                avatar.removeAttribute('src');
+                avatar.hidden = true;
+                placeholder.hidden = false;
+            }
+        }
+        const nameInput = document.getElementById('accountDisplayName');
+        if (nameInput) {
+            nameInput.value = localStorage.getItem(DISPLAY_NAME_KEY) || accountProfile.name || '';
+        }
     }
 
     function saveGoogleAccountEmail(email, token) {
@@ -47,6 +87,55 @@
         accountEmail = normalizedEmail;
         accountEmailToken = token;
         showGoogleAccount(accountEmail);
+    }
+
+    function saveGoogleAccountProfile(profile, token) {
+        accountProfile = {
+            name: typeof profile?.name === 'string' ? profile.name : '',
+            picture: typeof profile?.picture === 'string' && profile.picture.startsWith('https://') ? profile.picture : ''
+        };
+        localStorage.setItem(ACCOUNT_PROFILE_KEY, JSON.stringify(accountProfile));
+        saveGoogleAccountEmail(profile.email, token);
+    }
+
+    function setAccountStatus(message, isError = false) {
+        const status = document.getElementById('accountManagementStatus');
+        if (!status) return;
+        status.textContent = message;
+        status.style.color = isError ? '#b03a2e' : '#706778';
+    }
+
+    function saveAccountDisplayName() {
+        const input = document.getElementById('accountDisplayName');
+        if (!input) return;
+        const name = input.value.trim();
+        if (name) localStorage.setItem(DISPLAY_NAME_KEY, name);
+        else localStorage.removeItem(DISPLAY_NAME_KEY);
+        showGoogleAccount(accountEmail);
+        setAccountStatus(name ? '显示名称已保存在此设备。' : '已恢复使用 Google 昵称。');
+    }
+
+    async function bindGoogleAccount() {
+        setAccountStatus('正在连接 Google 并读取账号资料…');
+        try {
+            const token = await requestDriveAccess(PROFILE_SCOPES, accountEmail ? 'select_account' : '');
+            await updateGoogleAccountEmail(token);
+            setAccountStatus('Google 账号已绑定。此操作没有上传或更改网盘数据。');
+        } catch (error) {
+            console.error(error);
+            showGoogleAccount(accountEmail);
+            setAccountStatus(error.message || '绑定 Google 账号失败，请重试。', true);
+            alert(error.message || '绑定 Google 账号失败，请重试。');
+        }
+    }
+
+    function requireBoundGoogleAccount(action) {
+        if (accountEmail) return true;
+        const message = `请先前往「账号与绑定」页面绑定 Google 账号，再${action}。`;
+        setStatus(message, true);
+        alert(message);
+        location.hash = 'account';
+        return false;
     }
 
     async function updateGoogleAccountEmail(token) {
@@ -60,7 +149,7 @@
             throw new Error(`读取 Google 账号邮箱失败（${response.status}）。请重新授权后重试。`);
         }
         const profile = await response.json();
-        saveGoogleAccountEmail(profile.email, token);
+        saveGoogleAccountProfile(profile, token);
     }
 
     showGoogleAccount(accountEmail);
@@ -72,8 +161,8 @@
         status.style.color = isError ? '#b03a2e' : '#6657A5';
     }
 
-    function initGoogleDriveAuth() {
-        if (tokenClient) return tokenClient;
+    function initGoogleDriveAuth(scopes = DRIVE_SCOPES) {
+        if (tokenClient && tokenClientScopes === scopes) return tokenClient;
         if (location.protocol === 'file:') {
             throw new Error('当前网页是从本地文件（file://）打开的，Google 不允许从本地文件授权。请通过 HTTPS 网站地址访问，并在 Google OAuth 设置中加入对应的网站来源。');
         }
@@ -86,7 +175,7 @@
 
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: GOOGLE_CLIENT_ID,
-            scope: `${DRIVE_SCOPE} ${EMAIL_SCOPE}`,
+            scope: scopes,
             callback: (response) => {
                 if (!pendingTokenRequest) return;
                 if (response?.error || !response?.access_token) {
@@ -98,6 +187,7 @@
                     return;
                 }
                 accessToken = response.access_token;
+                accessTokenScopes = pendingTokenRequest.scopes;
                 tokenExpiresAt = Date.now() + (Number(response.expires_in || 3600) - 30) * 1000;
                 pendingTokenRequest.resolve(accessToken);
                 pendingTokenRequest = null;
@@ -111,25 +201,26 @@
                 }
             }
         });
+        tokenClientScopes = scopes;
         return tokenClient;
     }
 
-    function requestDriveAccess() {
+    function requestDriveAccess(scopes = DRIVE_SCOPES, prompt = '') {
         return new Promise((resolve, reject) => {
             let client;
             try {
-                client = initGoogleDriveAuth();
+                client = initGoogleDriveAuth(scopes);
             } catch (error) {
                 reject(error);
                 return;
             }
 
-            pendingTokenRequest = { resolve, reject };
+            pendingTokenRequest = { resolve, reject, scopes };
 
             // GIS token 会过期，且只保存在内存中；每次用户主动同步时重新请求。
             showGoogleAccount('加载中...');
             try {
-                client.requestAccessToken({ prompt: '' });
+                client.requestAccessToken({ prompt });
             } catch (error) {
                 showGoogleAccount(accountEmail);
                 pendingTokenRequest = null;
@@ -140,8 +231,8 @@
 
     async function getDriveToken() {
         try {
-            if (!accessToken || Date.now() >= tokenExpiresAt) {
-                accessToken = await requestDriveAccess();
+            if (!accessToken || Date.now() >= tokenExpiresAt || !accessTokenScopes.split(/\s+/).includes(DRIVE_SCOPE)) {
+                accessToken = await requestDriveAccess(DRIVE_SCOPES);
             }
             await updateGoogleAccountEmail(accessToken);
             return accessToken;
@@ -153,16 +244,19 @@
 
     function clearGoogleAccountBinding() {
         localStorage.removeItem(ACCOUNT_EMAIL_KEY);
+        localStorage.removeItem(ACCOUNT_PROFILE_KEY);
         accountEmail = '';
+        accountProfile = {};
         accountEmailToken = null;
         accessToken = null;
+        accessTokenScopes = '';
         tokenExpiresAt = 0;
         showGoogleAccount('');
     }
 
     function cancelGoogleAccountBinding() {
         if (!accountEmail && !accessToken) {
-            setStatus('当前没有已绑定的 Google 账号。');
+            setAccountStatus('当前没有已绑定的 Google 账号。');
             return;
         }
         const accountLabel = accountEmail || '当前授权账号';
@@ -171,16 +265,16 @@
         const tokenToRevoke = accessToken;
         if (!tokenToRevoke) {
             clearGoogleAccountBinding();
-            setStatus('本机绑定已取消。此页面没有可撤销的授权令牌；如需完全撤销 Google 授权，请在 Google 账号已连接的应用中移除「房屋管理系统」。');
+            setAccountStatus('本机绑定已取消。此页面没有可撤销的授权令牌；如需完全撤销 Google 授权，请在 Google 账号已连接的应用中移除「房屋管理系统」。');
             return;
         }
 
-        setStatus('正在取消绑定…');
+        setAccountStatus('正在取消绑定…');
         const oauth2 = window.google?.accounts?.oauth2;
         if (!oauth2?.revoke) {
             clearGoogleAccountBinding();
             const message = '本机绑定已取消，但 Google 授权撤销组件不可用。若要完全撤销授权，请在 Google 账号已连接的应用中移除「房屋管理系统」。';
-            setStatus(message, true);
+            setAccountStatus(message, true);
             alert(message);
             return;
         }
@@ -190,17 +284,17 @@
                 clearGoogleAccountBinding();
                 if (response?.error || response?.successful === false) {
                     const message = '本机绑定已取消，但 Google 授权未能撤销。请在 Google 账号已连接的应用中移除「房屋管理系统」。';
-                    setStatus(message, true);
+                    setAccountStatus(message, true);
                     alert(message);
                     return;
                 }
-                setStatus('Google 账号绑定和本次应用授权已取消。下次同步或恢复时需要重新授权。');
+                setAccountStatus('Google 账号绑定和本次应用授权已取消。下次同步或恢复时需要重新授权。');
             });
         } catch (error) {
             console.error('取消 Google 授权失败：', error);
             clearGoogleAccountBinding();
             const message = `本机绑定已取消，但 Google 授权撤销失败：${error.message || '未知错误'}。请在 Google 账号已连接的应用中移除「房屋管理系统」。`;
-            setStatus(message, true);
+            setAccountStatus(message, true);
             alert(message);
         }
     }
@@ -220,6 +314,7 @@
             let message = `Google Drive 请求失败（${response.status}）。`;
             if (response.status === 401) {
                 accessToken = null;
+                accessTokenScopes = '';
                 tokenExpiresAt = 0;
                 message = 'Google 授权已过期，请再点一次同步或恢复。';
             } else if (response.status === 403) {
@@ -235,7 +330,7 @@
         const entries = [];
         for (let index = 0; index < localStorage.length; index += 1) {
             const key = localStorage.key(index);
-            if (key !== null && key !== ACCOUNT_EMAIL_KEY) entries.push([key, localStorage.getItem(key)]);
+            if (key !== null && !LOCAL_ACCOUNT_KEYS.has(key)) entries.push([key, localStorage.getItem(key)]);
         }
         return {
             format: 'rent-flow-localstorage-backup',
@@ -422,6 +517,16 @@
     }
 
     async function changeGoogleDriveBackupPassword() {
+        if (!requireBoundGoogleAccount('更改网盘密码')) return;
+        try {
+            await getDriveToken();
+        } catch (error) {
+            console.error(error);
+            setStatus(error.message || 'Google 授权失败，请重试。', true);
+            alert(error.message || 'Google 授权失败，请重试。');
+            return;
+        }
+
         const oldPassword = prompt('请输入当前专属解密密码：');
         if (oldPassword === null || oldPassword.length === 0) {
             setStatus('已取消更改密码。');
@@ -495,11 +600,7 @@
     }
 
     async function uploadToGoogleDrive() {
-        let password = null;
-        if (!accountEmail) {
-            password = promptForBackupPassword();
-            if (password === null) return;
-        }
+        if (!requireBoundGoogleAccount('同步数据')) return;
 
         setStatus('正在连接 Google 并获取账号授权…');
         try {
@@ -511,10 +612,8 @@
             return;
         }
 
-        if (password === null) {
-            password = promptForBackupPassword();
-            if (password === null) return;
-        }
+        const password = promptForBackupPassword();
+        if (password === null) return;
 
         setStatus('正在本地加密并连接 Google Drive…');
         try {
@@ -531,6 +630,7 @@
     }
 
     async function loadFromGoogleDrive() {
+        if (!requireBoundGoogleAccount('恢复网盘数据')) return;
         setStatus('正在查找 Google Drive 备份…');
         try {
             await getDriveToken();
@@ -596,13 +696,17 @@
                 const key = localStorage.key(index);
                 if (key !== null) previousEntries.push([key, localStorage.getItem(key)]);
             }
+            const localAccountEntries = previousEntries.filter(([key]) => LOCAL_ACCOUNT_KEYS.has(key));
 
             try {
                 localStorage.clear();
                 for (const [key, value] of payload.entries) {
+                    if (LOCAL_ACCOUNT_KEYS.has(key)) continue;
                     if (value !== null) localStorage.setItem(key, value);
                 }
-                localStorage.setItem(ACCOUNT_EMAIL_KEY, accountEmail);
+                for (const [key, value] of localAccountEntries) {
+                    if (value !== null) localStorage.setItem(key, value);
+                }
             } catch (writeError) {
                 localStorage.clear();
                 for (const [key, value] of previousEntries) {
@@ -624,6 +728,8 @@
     window.uploadToGoogleDrive = uploadToGoogleDrive;
     window.loadFromGoogleDrive = loadFromGoogleDrive;
     window.changeGoogleDriveBackupPassword = changeGoogleDriveBackupPassword;
+    window.bindGoogleAccount = bindGoogleAccount;
+    window.saveAccountDisplayName = saveAccountDisplayName;
     window.cancelGoogleAccountBinding = cancelGoogleAccountBinding;
     window.initGoogleDriveAuth = initGoogleDriveAuth;
 })();

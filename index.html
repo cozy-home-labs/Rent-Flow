@@ -112,7 +112,7 @@
         .backup-export-button:hover { background: #eaf6ee; }
         .drive-sync-button { width: 100%; margin-top: 4px; background: #6657A5; }
         .drive-sync-button:hover { background: #56478F; }
-        #page-data .drive-account-status {
+        #page-account .drive-account-status {
             margin: 0 0 12px;
             padding: 11px 14px;
             border: 1px solid rgba(102, 87, 165, 0.16);
@@ -120,6 +120,9 @@
             background: rgba(239, 234, 245, 0.72);
             color: #56478F;
             font-weight: 600;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
         }
         #page-data .drive-backup-actions { display: grid; gap: 10px; }
         #page-data .drive-backup-actions button { width: 100%; margin: 0; }
@@ -142,7 +145,7 @@
             background: #e6def1;
             box-shadow: none;
         }
-        #page-data .drive-backup-secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        #page-data .drive-backup-secondary-actions { display: grid; gap: 10px; }
         #page-data .drive-backup-actions .drive-backup-secondary-actions button {
             padding: 9px 10px;
             color: #706778;
@@ -157,11 +160,20 @@
             background: #f7f5f9;
             box-shadow: none;
         }
-        #page-data .drive-backup-actions .drive-backup-secondary-actions .drive-unbind-button { color: #a56d70; }
-        #page-data .drive-backup-actions .drive-backup-secondary-actions .drive-unbind-button:hover:not(:disabled) {
-            color: #985b60;
-            background: #fbf5f5;
-        }
+        .account-profile-card { display: grid; justify-items: center; gap: 12px; max-width: 520px; padding: 24px; margin: 0 auto; border: 1px solid var(--lavender-line); border-radius: 14px; background: rgba(255, 253, 247, 0.78); }
+        .account-avatar, .account-avatar-placeholder { width: 112px; height: 112px; border-radius: 50%; }
+        .account-avatar { object-fit: cover; border: 3px solid rgba(102, 87, 165, 0.16); }
+        .account-avatar-placeholder { display: grid; place-items: center; color: #6657A5; background: linear-gradient(145deg, #eee8f5, #e4dcef); }
+        .account-avatar-placeholder svg { width: 56px; height: 56px; }
+        .account-name-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; width: 100%; }
+        .account-name-form label { grid-column: 1 / -1; margin: 0; }
+        .account-name-form input { margin: 0; }
+        .account-name-form button { width: auto; margin: 0; white-space: nowrap; }
+        .account-management-status { min-height: 20px; margin: 10px 0 0; color: var(--muted-ink); font-size: 14px; }
+        .account-actions { display: grid; gap: 10px; max-width: 520px; margin: 18px auto 0; }
+        .account-actions button { width: 100%; margin: 0; }
+        .account-actions .account-unbind-button { color: #a56d70; background: transparent; border: 1px solid #d9d4df; box-shadow: none; }
+        .account-actions .account-unbind-button:hover:not(:disabled) { color: #985b60; background: #fbf5f5; box-shadow: none; }
         .customer-config-actions { display: grid; justify-items: start; gap: 10px; }
         .customer-config-actions .save-room-button { width: 100%; }
         .payment-record-list { display: grid; gap: 8px; margin-top: 10px; }
@@ -571,13 +583,11 @@
                 <p>推荐一键同步Google网盘，以防万一请保存Excel备份，当然也更方便看之前的数据。</p>
                 <div class="section">
                     <h3>Google 网盘备份</h3>
-                    <p id="googleAccountStatus" class="meter-note drive-account-status" role="status" aria-live="polite">当前绑定的 Google 账号：未绑定</p>
                     <div class="drive-backup-actions">
                         <button type="button" class="drive-sync-button" onclick="uploadToGoogleDrive()">一键同步到 Google 网盘（防手机丢失）</button>
                         <button type="button" class="drive-restore-button" onclick="loadFromGoogleDrive()">从网盘恢复历史数据</button>
                         <div class="drive-backup-secondary-actions">
                             <button type="button" onclick="changeGoogleDriveBackupPassword()">更改专属解密密码</button>
-                            <button type="button" class="drive-unbind-button" onclick="cancelGoogleAccountBinding()">取消绑定</button>
                         </div>
                     </div>
                     <p id="driveSyncStatus" class="memo-status" role="status" aria-live="polite"></p>
@@ -617,6 +627,32 @@
                 </div>
                 <button type="button" class="clear-data-button" onclick="clearMonthlyDataRange()">清空所选月份的全部填写内容</button>
                 <p class="meter-note">只清除本机所选月份的账单和收款记录，不影响租客及房屋资料。现有 Google 网盘和 Excel 备份会保留，可用于撤回；如需让备份也更新为清空后的数据，请先前往「数据保存」页面，再使用网盘同步和 Excel 导出。</p>
+            </div>
+        </section>
+        <section class="page" id="page-account">
+            <div class="section">
+                <h2>账号与绑定</h2>
+                <div class="account-profile-card">
+                    <div id="accountAvatarPlaceholder" class="account-avatar-placeholder" aria-label="默认头像">
+                        <svg viewBox="0 0 64 64" aria-hidden="true">
+                            <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
+                            <path d="M10 56c1-12 10-19 22-19s21 7 22 19" fill="currentColor"></path>
+                        </svg>
+                    </div>
+                    <img id="accountAvatar" class="account-avatar" alt="Google 账号头像" hidden>
+                    <div class="account-name-form">
+                        <label for="accountDisplayName">本地显示名称</label>
+                        <input type="text" id="accountDisplayName" maxlength="60" placeholder="例如：青妈">
+                        <button type="button" class="quiet-action-button" onclick="saveAccountDisplayName()">保存名称</button>
+                    </div>
+                    <p id="googleAccountStatus" class="meter-note drive-account-status" role="status" aria-live="polite">当前账号：未绑定</p>
+                </div>
+                <p id="accountManagementStatus" class="account-management-status" role="status" aria-live="polite"></p>
+                <div class="account-actions">
+                    <button type="button" class="drive-sync-button" onclick="bindGoogleAccount()">绑定 Google 账号</button>
+                    <button type="button" class="account-unbind-button" onclick="cancelGoogleAccountBinding()">取消绑定</button>
+                </div>
+                <p class="meter-note">绑定账号只用于确认身份和授权，不会上传或覆盖网盘备份。需要备份数据时，请前往「数据保存」页面手动同步。</p>
             </div>
         </section>
     </main>
@@ -669,6 +705,7 @@
         </div>
         <a class="drawer-link" href="#data" data-page="data">数据保存</a>
         <a class="drawer-link" href="#clear-data" data-page="clear-data">清空数据</a>
+        <a class="drawer-link" href="#account" data-page="account">账号与绑定</a>
     </nav>
 </aside>
 
@@ -684,17 +721,24 @@
     const BACKUP_PENDING_KEY = '__rental_excel_backup_pending';
     const BACKUP_EXPORTED_KEY = '__rental_excel_backup_exported';
     const GOOGLE_ACCOUNT_EMAIL_KEY = '__rental_google_account_email';
+    const GOOGLE_ACCOUNT_PROFILE_KEY = '__rental_google_account_profile';
+    const GOOGLE_DISPLAY_NAME_KEY = '__rental_google_display_name';
+    const GOOGLE_LOCAL_ONLY_KEYS = new Set([
+        GOOGLE_ACCOUNT_EMAIL_KEY,
+        GOOGLE_ACCOUNT_PROFILE_KEY,
+        GOOGLE_DISPLAY_NAME_KEY
+    ]);
     const nativeStorageSetItem = Storage.prototype.setItem;
     const nativeStorageRemoveItem = Storage.prototype.removeItem;
     Storage.prototype.setItem = function(key, value) {
         nativeStorageSetItem.call(this, key, value);
-        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && key !== GOOGLE_ACCOUNT_EMAIL_KEY) {
+        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && !GOOGLE_LOCAL_ONLY_KEYS.has(key)) {
             nativeStorageSetItem.call(this, BACKUP_PENDING_KEY, '1');
         }
     };
     Storage.prototype.removeItem = function(key) {
         nativeStorageRemoveItem.call(this, key);
-        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && key !== GOOGLE_ACCOUNT_EMAIL_KEY) {
+        if (this === localStorage && key !== BACKUP_PENDING_KEY && key !== BACKUP_EXPORTED_KEY && !GOOGLE_LOCAL_ONLY_KEYS.has(key)) {
             nativeStorageSetItem.call(this, BACKUP_PENDING_KEY, '1');
         }
     };
@@ -3090,7 +3134,7 @@
 
     // 页面打开时默认加载一次
     function showPage(pageName) {
-        const pageNames = ['history', 'overview', 'ledger', 'customers', 'data', 'clear-data'];
+        const pageNames = ['history', 'overview', 'ledger', 'customers', 'data', 'clear-data', 'account'];
         const activePage = pageNames.includes(pageName) ? pageName : 'overview';
 
         document.querySelectorAll('.page').forEach(page => {
