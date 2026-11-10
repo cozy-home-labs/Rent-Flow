@@ -385,17 +385,19 @@
         return uploadResponse.json();
     }
 
+    const BACKUP_PASSWORD_SYMBOLS = '!@#$%^&*()-_=+[]{};:,.?/\\|~';
+    const BACKUP_PASSWORD_REQUIREMENTS = `至少 12 位，同时包含大写英文字母、小写英文字母、数字，以及至少一个符号（${BACKUP_PASSWORD_SYMBOLS}）。`;
+
     function validateBackupPassword(password) {
         const hasUppercase = /[A-Z]/.test(password);
         const hasLowercase = /[a-z]/.test(password);
         const hasDigit = /\d/.test(password);
-        const symbols = '!@#$%^&*()-_=+[]{};:,.?/\\|~';
-        const hasSymbol = Array.from(symbols).some(symbol => password.includes(symbol));
+        const hasSymbol = Array.from(BACKUP_PASSWORD_SYMBOLS).some(symbol => password.includes(symbol));
         return password.length >= 12 && hasUppercase && hasLowercase && hasDigit && hasSymbol;
     }
 
     function promptForBackupPassword() {
-        const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
+        const password = prompt(`请设置您的专属解密密码（忘记后无法恢复数据）。\n\n密码条件：${BACKUP_PASSWORD_REQUIREMENTS}`);
         if (password === null || password.length === 0) {
             setStatus('已取消同步。');
             return null;
@@ -426,7 +428,7 @@
             return;
         }
 
-        const newPassword = prompt('请输入新的专属解密密码（至少 12 位，包含大小写英文字母、数字和符号）：');
+        const newPassword = prompt(`请输入新的专属解密密码。\n\n密码条件：${BACKUP_PASSWORD_REQUIREMENTS}`);
         if (newPassword === null || newPassword.length === 0) {
             setStatus('已取消更改密码。');
             return;
