@@ -148,6 +148,59 @@
         }
     }
 
+    function clearGoogleAccountBinding() {
+        localStorage.removeItem(ACCOUNT_EMAIL_KEY);
+        accountEmail = '';
+        accountEmailToken = null;
+        accessToken = null;
+        tokenExpiresAt = 0;
+        showGoogleAccount('');
+    }
+
+    function cancelGoogleAccountBinding() {
+        if (!accountEmail && !accessToken) {
+            setStatus('当前没有已绑定的 Google 账号。');
+            return;
+        }
+        if (!confirm('确定取消当前 Google 账号绑定吗？取消后，下次同步或恢复时需要重新授权。')) return;
+
+        const tokenToRevoke = accessToken;
+        if (!tokenToRevoke) {
+            clearGoogleAccountBinding();
+            setStatus('本机绑定已取消。此页面没有可撤销的授权令牌；如需完全撤销 Google 授权，请在 Google 账号已连接的应用中移除「房屋管理系统」。');
+            return;
+        }
+
+        setStatus('正在取消绑定…');
+        const oauth2 = window.google?.accounts?.oauth2;
+        if (!oauth2?.revoke) {
+            clearGoogleAccountBinding();
+            const message = '本机绑定已取消，但 Google 授权撤销组件不可用。若要完全撤销授权，请在 Google 账号已连接的应用中移除「房屋管理系统」。';
+            setStatus(message, true);
+            alert(message);
+            return;
+        }
+
+        try {
+            oauth2.revoke(tokenToRevoke, response => {
+                clearGoogleAccountBinding();
+                if (response?.error || response?.successful === false) {
+                    const message = '本机绑定已取消，但 Google 授权未能撤销。请在 Google 账号已连接的应用中移除「房屋管理系统」。';
+                    setStatus(message, true);
+                    alert(message);
+                    return;
+                }
+                setStatus('Google 账号绑定和本次应用授权已取消。下次同步或恢复时需要重新授权。');
+            });
+        } catch (error) {
+            console.error('取消 Google 授权失败：', error);
+            clearGoogleAccountBinding();
+            const message = `本机绑定已取消，但 Google 授权撤销失败：${error.message || '未知错误'}。请在 Google 账号已连接的应用中移除「房屋管理系统」。`;
+            setStatus(message, true);
+            alert(message);
+        }
+    }
+
     async function driveRequest(url, options = {}) {
         const token = await getDriveToken();
         const response = await fetch(url, {
@@ -458,5 +511,6 @@
 
     window.uploadToGoogleDrive = uploadToGoogleDrive;
     window.loadFromGoogleDrive = loadFromGoogleDrive;
+    window.cancelGoogleAccountBinding = cancelGoogleAccountBinding;
     window.initGoogleDriveAuth = initGoogleDriveAuth;
 })();
