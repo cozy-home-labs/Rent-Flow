@@ -385,15 +385,24 @@
         return uploadResponse.json();
     }
 
+    function validateBackupPassword(password) {
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasDigit = /\d/.test(password);
+        const symbols = '!@#$%^&*()-_=+[]{};:,.?/\\|~';
+        const hasSymbol = Array.from(symbols).some(symbol => password.includes(symbol));
+        return password.length >= 12 && hasUppercase && hasLowercase && hasDigit && hasSymbol;
+    }
+
     function promptForBackupPassword() {
         const password = prompt('请设置您的专属解密密码（忘记此密码将无法恢复数据）：');
         if (password === null || password.length === 0) {
             setStatus('已取消同步。');
             return null;
         }
-        if (password.length < 12) {
-            alert('为加强保护，请设置至少 12 个字符的密码短语。');
-            setStatus('密码长度不足，未上传。', true);
+        if (!validateBackupPassword(password)) {
+            alert('密码不符合要求：至少 12 位，并包含大写英文字母、小写英文字母、数字和至少一个符号。');
+            setStatus('密码不符合安全要求，未上传。', true);
             return null;
         }
         const repeatedPassword = prompt('请再次输入专属解密密码以确认：');
@@ -408,6 +417,79 @@
         }
 
         return password;
+    }
+
+    async function changeGoogleDriveBackupPassword() {
+        const oldPassword = prompt('请输入当前专属解密密码：');
+        if (oldPassword === null || oldPassword.length === 0) {
+            setStatus('已取消更改密码。');
+            return;
+        }
+
+        const newPassword = prompt('请输入新的专属解密密码（至少 12 位，包含大小写英文字母、数字和符号）：');
+        if (newPassword === null || newPassword.length === 0) {
+            setStatus('已取消更改密码。');
+            return;
+        }
+        if (!validateBackupPassword(newPassword)) {
+            alert('新密码不符合要求：至少 12 位，并包含大写英文字母、小写英文字母、数字和至少一个符号。');
+            setStatus('新密码不符合安全要求，未更改。', true);
+            return;
+        }
+
+        const repeatedPassword = prompt('请再次输入新的专属解密密码以确认：');
+        if (repeatedPassword === null || repeatedPassword.length === 0) {
+            setStatus('已取消更改密码。');
+            return;
+        }
+        if (newPassword !== repeatedPassword) {
+            alert('两次输入的新密码不一致，未更改。');
+            setStatus('两次输入的新密码不一致，未更改。', true);
+            return;
+        }
+
+        setStatus('正在连接 Google Drive…');
+        try {
+            const file = await findBackupFile();
+            if (!file) throw new Error(`没有找到 ${BACKUP_FILENAME}，请先同步一份网盘备份。`);
+
+            const response = await fetch(`${DRIVE_API}/files/${encodeURIComponent(file.id)}?alt=media`, {
+                headers: { Authorization: `****** }
+            });
+            if (!response.ok) throw new Error(`下载网盘备份失败（${response.status}）。`);
+
+            let downloaded;
+            try {
+                downloaded = JSON.parse(await response.text());
+            } catch (_) {
+                throw new Error('网盘备份无法读取，密码未更改。');
+            }
+
+            let payload;
+            if (downloaded?.format === ENCRYPTED_BACKUP_FORMAT) {
+                try {
+                    payload = await decryptBackup(downloaded, oldPassword);
+                } catch (_) {
+                    throw new Error('当前密码错误或网盘备份已损坏，密码未更改。');
+                }
+            } else if (downloaded?.format === BACKUP_FORMAT) {
+                payload = downloaded;
+            } else {
+                throw new Error('网盘备份格式不正确，密码未更改。');
+            }
+            if (!isValidBackupPayload(payload)) {
+                throw new Error('网盘备份数据格式不正确，密码未更改。');
+            }
+
+            const encryptedPayload = await encryptBackup(payload, newPassword);
+            const result = await uploadBackupFile(encryptedPayload);
+            setStatus(`专属解密密码已更改：${result.name}（${new Date(result.modifiedTime).toLocaleString()}）`);
+            alert('网盘备份已使用新密码重新加密。请牢记新密码，恢复时需要输入新密码。');
+        } catch (error) {
+            console.error(error);
+            setStatus(error.message || '更改密码失败，请检查网络和 Google 设置。', true);
+            alert(error.message || '更改密码失败，请检查网络和 Google 设置。');
+        }
     }
 
     async function uploadToGoogleDrive() {
@@ -539,6 +621,7 @@
 
     window.uploadToGoogleDrive = uploadToGoogleDrive;
     window.loadFromGoogleDrive = loadFromGoogleDrive;
+    window.changeGoogleDriveBackupPassword = changeGoogleDriveBackupPassword;
     window.cancelGoogleAccountBinding = cancelGoogleAccountBinding;
     window.initGoogleDriveAuth = initGoogleDriveAuth;
 })();
